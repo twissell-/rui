@@ -1,6 +1,6 @@
 import json
 
-_CONFIG_PATH = './rui/config.json'
+_CONFIG_PATH = './config.json'
 
 def get(identifier):
     try:

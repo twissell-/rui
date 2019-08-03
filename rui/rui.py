@@ -16,7 +16,7 @@ root_logger = logging.getLogger('')
 root_logger.setLevel(logging.DEBUG)
 
 loghandler = logging.handlers.RotatingFileHandler(
-    '/etc/rui/error.log', maxBytes=100 * 1024 * 1024, backupCount=3)
+    './rui.log', maxBytes=100 * 1024 * 1024, backupCount=3)
 formatter = logging.Formatter(
     '%(asctime)s %(levelname)s - %(name)s ln.%(lineno)d - %(message)s')
 
