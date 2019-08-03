@@ -70,7 +70,7 @@ class TorrentCollection(object):
         self._selectorScore = value
 
     def __repr__(self):
-        return '%s (%s)' % (self.title, self.format)
+        return '%s (%s) [%s] - %d torrents' % (self.title, self.format.name, self.year, len(self.torrents))
 
 
 
@@ -83,7 +83,15 @@ class Torrent(object):
         self._rawUpMultiplier = raw_torrent.get('RawUpMultiplier')
         self._seeders = raw_torrent.get('Seeders')
         self._leechers = raw_torrent.get('Leechers')
-        self._episode = raw_torrent.get('EditionData').get('EditionTitle')
+
+        raw_episode = raw_torrent.get('EditionData').get('EditionTitle')
+        if not raw_episode:
+            self._episode = 0
+        else:
+            self._episode = int(''.join(i for i in raw_episode if i.isdigit()))
+
+        self._selectorScore = 0
+
 
     @property
     def link(self):
@@ -112,6 +120,14 @@ class Torrent(object):
     @property
     def episode(self):
         return self._episode
+
+    @property
+    def score(self):
+        return self._selectorScore
+
+    @score.setter
+    def score(self, value):
+        self._selectorScore = value
 
     def __repr__(self):
         return '%s - %s (S: %s | L: %s)' % (self.episode, self.properties, self.seeders, self.leechers)

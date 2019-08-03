@@ -5,5 +5,37 @@
     "animebytes": {
         "username": "",
         "torrentPass": ""
+    },
+    "downloads": {
+        "basePath": "",
+        "filters": {
+            "ongoing" : {
+                "prefer" : {
+                    "720p": 1,
+                    "mkv": 1,
+                    "HorribleSubs": 1,
+                    "Erai-raws": 0.9,
+                    "freeleech": 0.5
+                },
+                "exclude": [
+                    "hardsubs",
+                    "dub"
+                ]
+            },
+            "finished" : {
+                "prefer" : {
+                    "720p": 0.5,
+                    "mkv": 1,
+                    "Blu-ray": 1,
+                    "HorribleSubs": 1,
+                    "Erai-raws": 0.9,
+                    "freeleech": 0.5
+                },
+                "exclude": [
+                    "hardsubs",
+                    "dub"
+                ]
+            }
+        }
     }
 }

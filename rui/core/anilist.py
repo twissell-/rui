@@ -62,6 +62,7 @@ class ListEntry(object):
         self._english = raw_entry.get('media').get('title').get('english')
         self._romaji = raw_entry.get('media').get('title').get('romaji')
         self._progress = raw_entry.get('progress')
+        self._notes = raw_entry.get('notes')
         self._episodes = raw_entry.get('media').get('episodes')
         self._format = MediaFormat.map(raw_entry.get('media').get('format'))
         self._startYear = raw_entry.get('media').get('startDate').get('year')
@@ -84,6 +85,10 @@ class ListEntry(object):
         return self._progress
 
     @property
+    def notes(self):
+        return self._notes
+
+    @property
     def episodes(self):
         return self._episodes
 
@@ -96,13 +101,13 @@ class ListEntry(object):
         return self._format
 
     @property
-    def isOngoing(self):
+    def ongoing(self):
         if self._endYear:
             return False
         else:
             return True
 
     def __repr__(self):
-        return '%s (%d/%d) %s' % (self.title, self.progress, self.episodes, 'Ongoing' if self.isOngoing else 'Finished')
+        return '%s (%d/%d) %s' % (self.title, self.progress, self.episodes, 'Ongoing' if self.ongoing else 'Finished')
 
 
