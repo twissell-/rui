@@ -1,1 +1,1 @@
-Levenshtein
+python-Levenshtein
