@@ -23,7 +23,7 @@ def getTorrentCollectionByTitle(title):
     if response.get('Matches') == 0:
         logger.info('No results found.')
         return []
-    
+
     rtn = []
     for anime in response.get('Groups'):
         rtn.append(TorrentCollection(anime))
@@ -77,7 +77,7 @@ class TorrentCollection(object):
 class Torrent(object):
     def __init__(self, raw_torrent):
         super(Torrent, self).__init__()
-        self._link = raw_torrent.get('Link')
+        self._url = raw_torrent.get('Link')
         self._properties = raw_torrent.get('Property')
         self._rawDownMultiplier = raw_torrent.get('RawDownMultiplier')
         self._rawUpMultiplier = raw_torrent.get('RawUpMultiplier')
@@ -94,8 +94,8 @@ class Torrent(object):
 
 
     @property
-    def link(self):
-        return self._link
+    def url(self):
+        return self._url
 
     @property
     def properties(self):

@@ -7,10 +7,19 @@
         "torrentPass": ""
     },
     "downloads": {
-        "basePath": "",
+        "torrentClient": {
+            "address": "localhost",
+            "port": 9091,
+            "user": null,
+            "password": null
+        },
+        "directory": "/tmp/anime",
+        "tmpdir": "/tmp/",
+        "keepLoadedTorrents": true,
+        "startPaused": true,
         "filters": {
-            "ongoing" : {
-                "prefer" : {
+            "ongoing": {
+                "prefer": {
                     "720p": 1,
                     "mkv": 1,
                     "HorribleSubs": 1,
@@ -22,8 +31,8 @@
                     "dub"
                 ]
             },
-            "finished" : {
-                "prefer" : {
+            "finished": {
+                "prefer": {
                     "720p": 0.5,
                     "mkv": 1,
                     "Blu-ray": 1,

@@ -40,5 +40,4 @@ class MediaFormat(Enum):
             return MediaFormat.SPECIAL
         else:
             return MediaFormat.OTHER
-        
 

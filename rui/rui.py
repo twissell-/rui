@@ -10,6 +10,7 @@ from core import (
     fileManager,
     config
 )
+from core.torrentClient import TorrentClient
 from pprint import pprint
 
 root_logger = logging.getLogger('')
@@ -30,17 +31,21 @@ for anime in anilist.getWatchingListByUsername(config.get('anilist.username')):
         continue
     print('=' * 120)
     print('Anime:', anime)
-    
+
     missingEpisodes = fileManager.getMissingEpisodes(anime)
     if not missingEpisodes:
         print('All episodes of %s have been downloaded.' % anime.title)
         continue
     print('Missing Episodes: ', missingEpisodes)
-    
+
     collection = selector.selectCollection(anime, animebytes.getTorrentCollectionByTitle(anime.title))
     if not collection:
         print('No torrents found for "%s"' % anime.title)
         continue
     print('Collection:', collection)
     torrents = selector.selectTorrentFromCollection(anime, collection, missingEpisodes)
-    pprint(torrents)
+    tc = TorrentClient()
+    for torrent in torrents:
+        print('%s (%s)' % (torrent, fileManager.downloadFile(torrent.url)))
+        tc.add(torrent.url, fileManager.getDestinationPath(anime, True))
+        exit()
