@@ -46,5 +46,4 @@ for anime in anilist.getWatchingListByUsername(config.get('anilist.username')):
     torrents = selector.selectTorrentFromCollection(anime, collection, missingEpisodes)
     tc = TorrentClient()
     for torrent in torrents:
-        print('%s (%s)' % (torrent, fileManager.downloadFile(torrent.url)))
         tc.add(torrent.url, fileManager.getDestinationPath(anime, True))

@@ -12,8 +12,8 @@ def getDestinationPath(listEntry, createIfnotExits=False):
     '''Returns the destination (download) path for a given listEntry'''
     rtn = os.path.join(config.get('downloads.directory'), listEntry.title)
     if createIfnotExits and not os.path.isdir(rtn):
-        os.mkdir(rtn)
-
+        os.umask(0)
+        os.mkdir(rtn, mode=0o777)
     return rtn
 
 
@@ -49,6 +49,9 @@ def getMissingEpisodes(listEntry):
     for episode in range(1, listEntry.episodes + 1):
         if not getEpisodePath(listEntry, episode):
             missingEpisodes.append(episode)
+            if listEntry.ongoing:
+                # if the anime is ongoing, just look for the next missing episode.
+                break
 
     return missingEpisodes
 
