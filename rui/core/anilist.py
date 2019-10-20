@@ -58,6 +58,7 @@ def getWatchingListByUsername(username):
 class ListEntry(object):
     def __init__(self, raw_entry):
         super(ListEntry, self).__init__()
+        self._id = self._title = raw_entry.get('media').get('id')
         self._title = raw_entry.get('media').get('title').get('userPreferred')
         self._english = raw_entry.get('media').get('title').get('english')
         self._romaji = raw_entry.get('media').get('title').get('romaji')
@@ -67,6 +68,10 @@ class ListEntry(object):
         self._format = MediaFormat.map(raw_entry.get('media').get('format'))
         self._startYear = raw_entry.get('media').get('startDate').get('year')
         self._endYear = raw_entry.get('media').get('endDate').get('year')
+
+    @property
+    def id(self):
+        return self._id
 
     @property
     def title(self):
@@ -108,6 +113,6 @@ class ListEntry(object):
             return True
 
     def __repr__(self):
-        return '%s (%d/%d) %s' % (self.title, self.progress, self.episodes, 'Ongoing' if self.ongoing else 'Finished')
+        return '[%d] %s (%d/%d) %s' % (self.id, self.title, self.progress or 0, self.episodes or 0, 'Ongoing' if self.ongoing else 'Finished')
 
 

@@ -17,6 +17,11 @@
         "tmpdir": "/tmp/",
         "keepLoadedTorrents": true,
         "startPaused": true,
+        "anilistValueOverride": {
+            "animeId": {
+                "firstEpisode": 13
+            }
+        },
         "filters": {
             "ongoing": {
                 "prefer": {

@@ -46,7 +46,10 @@ def getEpisodePath(listEntry, episodeNumber):
 def getMissingEpisodes(listEntry):
     '''Returns a list of integers with the missing (not downloaded) episodes of a listEntry'''
     missingEpisodes = []
-    for episode in range(1, listEntry.episodes + 1):
+    first_episode = config.get('downloads.anilistValueOverride.' + str(listEntry.id) + '.firstEpisode') or 1
+    total_episodes = first_episode + (listEntry.episodes or 99)
+
+    for episode in range(first_episode, total_episodes):
         if not getEpisodePath(listEntry, episode):
             missingEpisodes.append(episode)
             if listEntry.ongoing:
