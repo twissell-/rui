@@ -12,6 +12,7 @@ from core import (
     config
 )
 from core.torrentClient import TorrentClient
+import commands
 from pprint import pprint
 
 root_logger = logging.getLogger('')
@@ -22,49 +23,29 @@ loghandler = logging.handlers.RotatingFileHandler(
 formatter = logging.Formatter(
     '%(asctime)s %(levelname)s - %(name)s ln.%(lineno)d - %(message)s')
 
-
 loghandler.setFormatter(formatter)
 root_logger.addHandler(loghandler)
 
 logger = logging.getLogger('cli')
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--dry-run', action='store_true', help='Does add the torrent to transmission .')
-parser.add_argument('-v', '--verbose', action='store_true', help='Explain what it\'s being done')
 
-def process(isDryRun=False, verbose=False):
-    for anime in anilist.getWatchingListByUsername(config.get('anilist.username')):
-        if anime.notes and 'rui.ignore' in anime.notes:
-            continue
-        if verbose: 
-            print('=' * 120)
-            print('Anime:', anime)
-            print('Destination: ', fileManager.getDestinationPath(anime, True))
+parser = argparse.ArgumentParser(prog='rui', add_help=True)
+subparsers = parser.add_subparsers()
 
-        missingEpisodes = fileManager.getMissingEpisodes(anime)
-        if not missingEpisodes:
-            if verbose: print('All episodes of %s have been downloaded.' % anime.title)
-            continue
-        if verbose: print('Missing Episodes: ', missingEpisodes)
-
-        collection = selector.selectCollection(anime, animebytes.getTorrentCollectionByTitle(anime.title))
-        if not collection:
-            if verbose: print('No torrent collection found for "%s"' % anime.title)
-            continue
-        if verbose: print('Collection:', collection)
-
-        torrents = selector.selectTorrentFromCollection(anime, collection, missingEpisodes)
-        if not torrents:
-            if verbose: print('No torrents found for "%s" %s' % (anime.title, str(missingEpisodes)))
-            continue
-
-        tc = TorrentClient()
-        for torrent in torrents:
-            if verbose: print('Torrent: ', torrent)
-            if not isDryRun:
-                tc.add(torrent.url, fileManager.getDestinationPath(anime, True))
+for name in dir(commands):
+    if not (name[-2:] == '__' or name == 'command'):
+        command_class = getattr(commands, name)
+        if issubclass(command_class, commands.command.Command):
+            command = command_class()
+            command.configureParameters(subparsers.add_parser(name[0].lower() + name[1:])).set_defaults(func=command.execute)
 
 
-if __name__ == "__main__":
+def main(parser):
     args = parser.parse_args()
-    process(isDryRun=args.dry_run, verbose=args.verbose)
+    if 'func' in dir(args):
+        args.func(args)
+    else:
+        parser.print_help()
+
+if __name__ == '__main__':
+    main(parser)
