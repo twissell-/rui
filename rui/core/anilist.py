@@ -64,7 +64,7 @@ class ListEntry(object):
         self._romaji = raw_entry.get('media').get('title').get('romaji')
         self._progress = raw_entry.get('progress')
         self._notes = raw_entry.get('notes')
-        self._episodes = raw_entry.get('media').get('episodes')
+        self._episodes = raw_entry.get('media').get('episodes') or 99
         self._format = MediaFormat.map(raw_entry.get('media').get('format'))
         self._startYear = raw_entry.get('media').get('startDate').get('year')
         self._endYear = raw_entry.get('media').get('endDate').get('year')

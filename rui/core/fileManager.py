@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def getDestinationPath(listEntry, createIfnotExits=False):
     '''Returns the destination (download) path for a given listEntry'''
-    rtn = os.path.join(config.get('downloads.directory'), listEntry.title)
+    rtn = os.path.join(config.get('downloads.directory'), listEntry.title.replace('?','').replace('.', '').replace(':', '').replace('/', ' '))
     if createIfnotExits and not os.path.isdir(rtn):
         os.umask(0)
         os.mkdir(rtn, mode=0o777)
@@ -19,11 +19,12 @@ def getDestinationPath(listEntry, createIfnotExits=False):
 
 def getEpisodePath(listEntry, episodeNumber):
     '''If is downloaded, returns de absolute path for the given episodeNumber of a listEntry. False otherwise.'''
-    paddedNumber = ("%0" + str(len(str(listEntry.episodes))) + "d") % episodeNumber
+    pattern = re.compile(r'\- *0*%d( |v)' % episodeNumber)
+    # searchString = ("%0" + str(len(str(listEntry.episodes))) + "d") % episodeNumber
     # basename = os.path.basename(getDestinationPath(listEntry))
     # for path in glob.glob(os.path.join(getDestinationPath(listEntry), '*', search_string % episodeNumber)):
 
-    logger.debug('Looking for episode: %s' % paddedNumber)
+    logger.debug('Looking for episode: %d with pattern "%s"' % (episodeNumber, pattern))
     destinationPath = getDestinationPath(listEntry)
     episodeFullPath = None
     for rootDir, dirs, files in os.walk(destinationPath):
@@ -32,14 +33,15 @@ def getEpisodePath(listEntry, episodeNumber):
             episodeFullPath = os.path.join(destinationPath, files[0])
         else:
             for filename in files:
-                if paddedNumber in filename:
+                logger.debug('Filename: "%s"' % filename)
+                if pattern.search(filename):
+                    logger.debug('Match: "%s"' % pattern.search(filename).group(0))
                     episodeFullPath = os.path.join(destinationPath, filename)
+                    logger.debug('Episode %s found: "%s"' % (episodeNumber, episodeFullPath))
+                    
+                    return episodeFullPath
 
-        if episodeFullPath:
-            logger.debug('Episode %s found: "%s"' % (paddedNumber, episodeFullPath))
-            return episodeFullPath
-
-    logger.debug('Episode %s not found.' % paddedNumber)
+    logger.debug('Episode %s not found.' % episodeNumber)
     return False
 
 

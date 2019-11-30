@@ -79,7 +79,9 @@ def selectTorrentFromCollection(listEntry, collection, missingEpisodes):
 
     if not listEntry.ongoing and listEntry.episodes == len(missingEpisodes):
         logger.debug('Using finished filters')
-        rtn.append(_selectTorrentFromCollection(collection, config.get('downloads.filters.finished')))
+        torrent = _selectTorrentFromCollection(collection, config.get('downloads.filters.finished'))
+        if torrent:
+            rtn.append(torrent)
     else:
         logger.debug('Using ongoing filters')
         logger.debug('Missing episodes: %s' % missingEpisodes)
