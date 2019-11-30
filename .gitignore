@@ -123,6 +123,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# vscode
+.vscode/
+
 # Project specific
 config.json
 *.log*
