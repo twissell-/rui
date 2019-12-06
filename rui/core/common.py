@@ -41,3 +41,6 @@ class MediaFormat(Enum):
         else:
             return MediaFormat.OTHER
 
+
+def sanitize(string):
+    return string.replace('?','').replace('.', '').replace(':', '').replace('/', ' ').replace('"','')

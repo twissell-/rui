@@ -16,7 +16,7 @@ import commands
 from pprint import pprint
 
 root_logger = logging.getLogger('')
-root_logger.setLevel(logging.DEBUG)
+root_logger.setLevel(logging.INFO)
 
 loghandler = logging.handlers.RotatingFileHandler(
     './rui.log', maxBytes=10 * 1024 * 1024, backupCount=3)
