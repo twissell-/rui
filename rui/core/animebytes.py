@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 _ENDPOINT = 'https://animebytes.tv/scrape.php?torrent_pass={torrentPass}&format=anime&username={username}&searchstr={searchstr}&filter_cat%5B1%5D&type=anime'
 
 
+def getTorrentCollectionByAnime(anime):
+    return getTorrentCollectionByTitle(anime.romaji) or getTorrentCollectionByTitle(anime.english) 
+
+
 def getTorrentCollectionByTitle(title):
     logger.info('Getting torrents list for "%s"' % title)
     response = requests.get(_ENDPOINT.format(
