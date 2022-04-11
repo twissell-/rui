@@ -4,6 +4,8 @@ import logging
 from core import config
 from core.common import MediaFormat
 from pprint import pprint
+from core.common import sanitize
+
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +13,27 @@ _ENDPOINT = 'https://animebytes.tv/scrape.php?torrent_pass={torrentPass}&format=
 
 
 def getTorrentCollectionByAnime(anime):
-    return getTorrentCollectionByTitle(anime.romaji) or getTorrentCollectionByTitle(anime.english) 
+    
+    rtn = []
+    if anime.title and not rtn:
+        rtn = getTorrentCollectionByTitle(anime.title)
+    if anime.romaji and not rtn:
+        logger.info('Retrying with romaji title.')
+        rtn = getTorrentCollectionByTitle(anime.romaji)
+    if anime.native and not rtn:
+        logger.info('Retrying with native title.')
+        rtn = getTorrentCollectionByTitle(anime.native) 
+    if anime.english and not rtn:
+        logger.info('Retrying with english title.')
+        rtn = getTorrentCollectionByTitle(anime.english) 
+    if anime.romaji and not rtn:
+        logger.info('Retrying with sanitize romaji title.')
+        rtn = getTorrentCollectionByTitle(sanitize(anime.romaji))
+    if anime.english and not rtn:
+        logger.info('Retrying with sanitize english title.')
+        rtn = getTorrentCollectionByTitle(sanitize(anime.english))
+    
+    return rtn
 
 
 def getTorrentCollectionByTitle(title):
@@ -21,7 +43,7 @@ def getTorrentCollectionByTitle(title):
             username=config.get('animebytes.username'),
             searchstr=title
         )).json()
-    logger.debug('Raw response: ' + str(response))
+    logger.debug('Raw response: ' + json.dumps(response, indent=2))
 
 
     if response.get('Matches') == 0:
@@ -40,8 +62,12 @@ class TorrentCollection(object):
     def __init__(self, raw_collection):
         super(TorrentCollection, self).__init__()
         self._seriesName = raw_collection.get('SeriesName')
+        syns = raw_collection.get('Synonymns')
+        self._synonymns = syns if isinstance(syns, list) else [value for key, value in syns.items()]
         self._format = MediaFormat.map(raw_collection.get('GroupName'))
         self._year = int(raw_collection.get('Year'))
+        links = raw_collection.get('Links')
+        self._anidb = links.get('AniDB') if links else None
         self._torrents = []
 
         for torrent in raw_collection.get('Torrents'):
@@ -54,12 +80,20 @@ class TorrentCollection(object):
         return self._seriesName
 
     @property
+    def synonymns(self):
+        return self._synonymns
+
+    @property
     def format(self):
         return self._format
 
     @property
     def year(self):
         return self._year
+
+    @property
+    def anidb(self):
+        return self._anidb
 
     @property
     def torrents(self):

@@ -21,7 +21,8 @@ def getDestinationPath(listEntry, createIfnotExits=False, basePath=config.get('d
 
 def getEpisodePath(listEntry, episodeNumber, destinationPath=None):
     '''If is downloaded, returns de absolute path for the given episodeNumber of a listEntry. False otherwise.'''
-    pattern = re.compile(r'(\- *|\_| )0*%d( |v|_)' % episodeNumber)
+    paddedEpisode = ('%%0%dd' % len(str(listEntry.lastEpisode))) % episodeNumber
+    pattern = re.compile(r'(\- *|\_| )%s( |v|_)' % paddedEpisode)
     # searchString = ("%0" + str(len(str(listEntry.episodes))) + "d") % episodeNumber
     # basename = os.path.basename(getDestinationPath(listEntry))
     # for path in glob.glob(os.path.join(getDestinationPath(listEntry), '*', search_string % episodeNumber)):
@@ -52,10 +53,8 @@ def getEpisodePath(listEntry, episodeNumber, destinationPath=None):
 def getMissingEpisodes(listEntry, path=None):
     '''Returns a list of integers with the missing (not downloaded) episodes of a listEntry'''
     missingEpisodes = []
-    first_episode = config.get('valueOverride.' + str(listEntry.id) + '.firstEpisode') or 1
-    total_episodes = first_episode + (listEntry.episodes or 99)
 
-    for episode in range(first_episode, total_episodes):
+    for episode in range(listEntry.firstEpisode, listEntry.lastEpisode):
         if not getEpisodePath(listEntry, episode, path):
             missingEpisodes.append(episode)
             if listEntry.ongoing:
@@ -68,10 +67,8 @@ def getMissingEpisodes(listEntry, path=None):
 def getEpisodes(listEntry, path=None):
     '''Returns a list of paths with the downloaded episodes of a listEntry'''
     episodes = []
-    first_episode = config.get('valueOverride.' + str(listEntry.id) + '.firstEpisode') or 1
-    total_episodes = first_episode + (listEntry.episodes or 99)
 
-    for episode in range(first_episode, total_episodes):
+    for episode in range(listEntry.firstEpisode, listEntry.lastEpisode):
         if getEpisodePath(listEntry, episode, path):
             episodes.append(episode)
 

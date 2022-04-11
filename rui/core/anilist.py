@@ -31,6 +31,7 @@ query ($username: String, $status: MediaListStatus) {
           title {
             english
             romaji
+            native
             userPreferred
           }
           episodes
@@ -76,7 +77,7 @@ def getListByUsernameAndStatus(username, status):
                     }
                 }).json()
         entries = response.get('data').get('MediaListCollection').get('lists')[0].get('entries')
-        logger.debug('Raw response: ' + str(entries))
+        logger.debug('Raw response: ' + json.dumps(entries, indent=2))
 
         if config.get('cache.enabled'):
             AnilistCache.writeCache(username, status, entries)
@@ -140,13 +141,15 @@ class AnilistCache(object):
 class ListEntry(object):
     def __init__(self, raw_entry):
         super(ListEntry, self).__init__()
-        self._id = self._title = raw_entry.get('media').get('id')
-        self._title = raw_entry.get('media').get('title').get('userPreferred')
+        self._id = raw_entry.get('media').get('id')
+        self._title = config.get('valueOverride.' + str(self._id) + '.title') or raw_entry.get('media').get('title').get('userPreferred')
         self._english = raw_entry.get('media').get('title').get('english')
         self._romaji = raw_entry.get('media').get('title').get('romaji')
+        self._native = raw_entry.get('media').get('title').get('native')
         self._progress = raw_entry.get('progress')
         self._notes = raw_entry.get('notes')
-        self._episodes = raw_entry.get('media').get('episodes') or 99
+        self._episodes = raw_entry.get('media').get('episodes') or 98
+        self._firstEpisode = config.get('valueOverride.' + str(self._id) + '.firstEpisode') or 1
         self._format = MediaFormat.map(raw_entry.get('media').get('format'))
         self._startYear = raw_entry.get('media').get('startDate').get('year')
         self._endYear = raw_entry.get('media').get('endDate').get('year')
@@ -169,6 +172,10 @@ class ListEntry(object):
         return self._romaji
 
     @property
+    def native(self):
+        return self._native
+
+    @property
     def progress(self):
         return self._progress
 
@@ -179,6 +186,14 @@ class ListEntry(object):
     @property
     def episodes(self):
         return self._episodes
+
+    @property
+    def firstEpisode(self):
+        return self._firstEpisode
+
+    @property
+    def lastEpisode(self):
+        return self.firstEpisode + self.episodes
 
     @property
     def year(self):

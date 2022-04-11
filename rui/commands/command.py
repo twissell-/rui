@@ -33,7 +33,6 @@ class Command(metaclass=ABCMeta):
 
         except CommandRuntimeException as err:
             self._logger.exception(err)
-            raise err
             exit(1)
         else:
             exit(result.exit_status)

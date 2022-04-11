@@ -2,3 +2,4 @@ python-Levenshtein
 requests
 transmissionrpc
 tabulate
+python-qbittorrent

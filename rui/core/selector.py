@@ -5,13 +5,24 @@ import logging
 from pprint import pprint
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
 
 
 def _title_comparator(listEntry, torrentCollection):
-    return min(
-        distance((listEntry.english or '').lower(), torrentCollection.title.lower()),
-        distance((listEntry.romaji or '').lower(), torrentCollection.title.lower())
-    )
+    try:
+        collection_values = torrentCollection.synonymns + [torrentCollection.title]
+        list_values = [
+            listEntry.english,
+            listEntry.romaji,
+            listEntry.native
+        ]
+        return min([distance(a.lower(),b.lower()) for a in collection_values if a for b in list_values if b])
+    except AttributeError as err:
+        print(err)
+        print(torrentCollection.synonymns)
+        print(torrentCollection.title)
+        exit()
+
 
 
 def selectCollection(listEntry, torrentCollections):

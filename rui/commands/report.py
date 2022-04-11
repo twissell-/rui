@@ -28,6 +28,7 @@ class Report(Command):
         return parser
 
     def _misingAnimeReport(self, args):
+        args.verbose = True
         headers= [
             'ID',
             'Title',
@@ -131,4 +132,5 @@ class Report(Command):
             print(output.message)
         else:
             print(tabulate(*output.message, tablefmt="psql"))
+            print('%d rows.' % len(output.message[0]))
 
