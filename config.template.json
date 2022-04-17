@@ -14,6 +14,11 @@
             "password": ""
         },
         "directory": "",
+        "divideByFormat": {
+            "enabled": false,
+            "movies": "Movies",
+            "others": "TV Shows"
+        },
         "tmpdir": "/tmp/",
         "keepLoadedTorrents": false,
         "startPaused": false,

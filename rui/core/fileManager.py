@@ -6,23 +6,39 @@ import requests
 import tempfile
 from core import config
 from core.common import sanitize
+from core.common import MediaFormat
+
 
 logger = logging.getLogger(__name__)
 
-def getDestinationPath(listEntry, createIfnotExits=False, basePath=config.get('downloads.directory')):
+def getDestinationPath(
+    listEntry,
+    createIfnotExits=False,
+    basePath=config.get('downloads.directory'),
+    divideByFormat=config.get('downloads.divideByFormat.enabled')):
     '''Returns the destination (download) path for a given listEntry'''
-    rtn = os.path.join(basePath, config.get('valueOverride.' + str(listEntry.id) + '.directory') or '', sanitize(listEntry.title))
+
+    libdir = ''
+    if divideByFormat:
+        divideByFormat = config.get('downloads.divideByFormat')
+        libdir = divideByFormat.get('movies') if listEntry.format == MediaFormat.MOVIE else divideByFormat.get('others')
+
+    rtn = os.path.join(
+        basePath,
+        libdir,
+        config.get('valueOverride.' + str(listEntry.id) + '.directory') or '',
+        sanitize(listEntry.title))
+
     if createIfnotExits and not os.path.isdir(rtn):
         os.umask(0)
-        os.mkdir(rtn, mode=0o777)
+        os.makedirs(rtn, mode=0o755)
 
     return rtn
 
 
 def getEpisodePath(listEntry, episodeNumber, destinationPath=None):
     '''If is downloaded, returns de absolute path for the given episodeNumber of a listEntry. False otherwise.'''
-    paddedEpisode = ('%%0%dd' % len(str(listEntry.lastEpisode))) % episodeNumber
-    pattern = re.compile(r'(\- *|\_| )%s( |v|_)' % paddedEpisode)
+    pattern = re.compile(r'(\- *|\_| |S[0-9]*E)0*%s( |v|_)' % episodeNumber)
     # searchString = ("%0" + str(len(str(listEntry.episodes))) + "d") % episodeNumber
     # basename = os.path.basename(getDestinationPath(listEntry))
     # for path in glob.glob(os.path.join(getDestinationPath(listEntry), '*', search_string % episodeNumber)):
@@ -54,7 +70,7 @@ def getMissingEpisodes(listEntry, path=None):
     '''Returns a list of integers with the missing (not downloaded) episodes of a listEntry'''
     missingEpisodes = []
 
-    for episode in range(listEntry.firstEpisode, listEntry.lastEpisode):
+    for episode in range(listEntry.firstEpisode, listEntry.lastEpisode + 1):
         if not getEpisodePath(listEntry, episode, path):
             missingEpisodes.append(episode)
             if listEntry.ongoing:
@@ -68,7 +84,7 @@ def getEpisodes(listEntry, path=None):
     '''Returns a list of paths with the downloaded episodes of a listEntry'''
     episodes = []
 
-    for episode in range(listEntry.firstEpisode, listEntry.lastEpisode):
+    for episode in range(listEntry.firstEpisode, listEntry.lastEpisode + 1):
         if getEpisodePath(listEntry, episode, path):
             episodes.append(episode)
 

@@ -60,6 +60,19 @@ class DownloadWatching(Command):
             for torrent in torrents:
                 if args.verbose: output += ('Torrent: %s' % torrent + '\n')
                 if not args.dry_run:
-                    tc.add(torrent.url, fileManager.getDestinationPath(anime, True))
+                    if torrent.episode:
+                        detail = ' - %03d' % torrent.episode
+                    elif anime.episodes > 1:
+                        detail = ' - %03d-%03d' % (anime.firstEpisode, anime.lastEpisode)
+                    else:
+                        detail = ' - %03d' % anime.firstEpisode
+
+                    name = anime.title + detail
+                    category = 'Anime'
+                    tags = ','.join(['rui', 'Ongoing' if torrent.episode else 'Finished'])
+
+                    tc.add(
+                        torrent.url, fileManager.getDestinationPath(anime, True),
+                        name=name, category=category, tags=tags)
 
         return CommandOutput(exit_status=0, message=output)

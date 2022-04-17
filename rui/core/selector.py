@@ -5,7 +5,7 @@ import logging
 from pprint import pprint
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 
 def _title_comparator(listEntry, torrentCollection):
@@ -33,7 +33,7 @@ def selectCollection(listEntry, torrentCollections):
         collection.score = - (
             0.1 * abs(listEntry.format - collection.format)
             + _title_comparator(listEntry, collection) 
-            + abs(listEntry.year - collection.year))
+            + 5 * abs(listEntry.year - collection.year))
         logger.debug('Collection score: "%f"' % collection.score)
 
         if not best:
@@ -82,7 +82,6 @@ def _selectTorrentFromCollection(collection, filters, episode_filter=0):
         return best
     else:
         logger.info('No torrents found for "%s" (episode %d)' % (collection.title, episode_filter))
-
 
 
 def selectTorrentFromCollection(listEntry, collection, missingEpisodes):

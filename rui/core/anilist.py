@@ -193,7 +193,7 @@ class ListEntry(object):
 
     @property
     def lastEpisode(self):
-        return self.firstEpisode + self.episodes
+        return self.firstEpisode + self.episodes - 1
 
     @property
     def year(self):
