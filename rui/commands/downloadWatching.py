@@ -28,6 +28,7 @@ class DownloadWatching(Command):
     def _execute(self, args):
     # def process(isDryRun=False, verbose=False):
         output = ''
+        tc = QBitTorrentClient()
         for anime in anilist.getWatchingListByUsername(config.get('anilist.username')):
             if anime.notes and 'rui.ignore' in anime.notes:
                 continue
@@ -65,12 +66,11 @@ class DownloadWatching(Command):
                     elif anime.episodes > 1:
                         detail = ' - %03d-%03d' % (anime.firstEpisode, anime.lastEpisode)
                     else:
-                        detail = ' - %03d' % anime.firstEpisode
+                        detail = ''
 
                     name = anime.title + detail
                     category = 'Anime'
                     tags = ','.join(['rui', 'Ongoing' if torrent.episode else 'Finished'])
-
                     tc.add(
                         torrent.url, fileManager.getDestinationPath(anime, True),
                         name=name, category=category, tags=tags)

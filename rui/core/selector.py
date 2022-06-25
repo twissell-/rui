@@ -84,6 +84,7 @@ def _selectTorrentFromCollection(collection, filters, episode_filter=0):
         logger.info('No torrents found for "%s" (episode %d)' % (collection.title, episode_filter))
 
 
+
 def selectTorrentFromCollection(listEntry, collection, missingEpisodes):
     rtn = []
 
