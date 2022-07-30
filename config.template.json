@@ -7,6 +7,10 @@
         "torrentPass": ""
     },
     "torrentLoader": {
+        "lists": {
+            "watching": true,
+            "customPlanning": "rui"
+        },
         "torrentClient": {
             "address": "localhost",
             "port": 9091,
@@ -55,10 +59,6 @@
                 ]
             }
         }
-    },
-    "reports": {
-        "alternativeDirecories": [],
-        "saveMinimunScore": 6
     },
     "valueOverride": {
         "animeId": {"firstEpisode": 64}

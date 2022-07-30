@@ -1,21 +1,8 @@
 #!/usr/bin/env python3
 
 import logging
-import argparse
-import inspect
 from logging.handlers import RotatingFileHandler
-
-from core import (
-    anilist,
-    animebytes,
-    selector,
-    fileManager,
-    config
-)
-from core.torrentClient import TorrentClient, QBitTorrentClient
 import commands
-from pprint import pprint
-
 import typer
 
 root_logger = logging.getLogger('')

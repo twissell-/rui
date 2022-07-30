@@ -19,6 +19,7 @@ class MediaListStatus:
     PAUSED = 'PAUSED'
     REPEATING = 'REPEATING'
 
+
 class MediaStatus:
     FINISHED = 'FINISHED'
     RELEASING = 'RELEASING'
@@ -35,6 +36,7 @@ query ($username: String, $status: MediaListStatus) {
       status
       entries {
         score
+        customLists
         media {
           id
           title {
@@ -68,6 +70,10 @@ def getWatchingListByUsername(username):
 
 def getCompletedListByUsername(username):
     return getListByUsernameAndStatus(username, MediaListStatus.COMPLETED)
+
+
+def getPlanningCustomList(username, custom_list_name):
+    return [anime for anime in getListByUsernameAndStatus(username, MediaListStatus.PLANNING) if custom_list_name.lower() in anime.customLists]
 
 
 def getListByUsernameAndStatus(username, status):
@@ -164,6 +170,7 @@ class ListEntry(object):
         self._startYear = raw_entry.get('media').get('startDate').get('year')
         self._endYear = raw_entry.get('media').get('endDate').get('year')
         self._airingStatus = raw_entry.get('media').get('status')
+        self._customLists = [key for key, value in raw_entry.get('customLists').items() if value]
         self._score = raw_entry.get('score') or 0
 
     @property
@@ -221,6 +228,10 @@ class ListEntry(object):
     @property
     def score(self):
         return self._score
+
+    @property
+    def customLists(self):
+        return self._customLists
 
     @property
     def ongoing(self):

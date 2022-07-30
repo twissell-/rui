@@ -7,6 +7,7 @@ from core import (
     selector,
     animebytes
 )
+from core.anilist import MediaStatus
 from core.torrentClient import TorrentClient, QBitTorrentClient
 
 
@@ -14,10 +15,19 @@ def load_current(dry_run: bool, id_: int):
     """Searchs torrents for new episodes for each anime in watching list and add them to qBitTorrent."""
 
     logger = logging.getLogger(__name__)
-    output = []
+    animes = []
 
-    for anime in anilist.getWatchingListByUsername(config.get('anilist.username')):
-        logger.info('=' * 120)
+    if config.get('torrentLoader.lists.watching'):
+        animes += anilist.getWatchingListByUsername(config.get('anilist.username'))
+
+    if config.get('torrentLoader.lists.customPlanning'):
+        animes += anilist.getPlanningCustomList(config.get('anilist.username'), config.get('torrentLoader.lists.customPlanning'))
+
+    animes = [anime for anime in animes if anime.airingStatus in [MediaStatus.RELEASING, MediaStatus.FINISHED]]
+
+    output = []
+    for anime in animes:
+        logger.info('-' * 120)
 
         if anime.notes and 'rui.ignore' in anime.notes:
             continue
