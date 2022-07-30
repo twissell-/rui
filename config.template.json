@@ -14,13 +14,19 @@
             "password": ""
         },
         "directory": "",
+        "divideByFormat": {
+            "enabled": false,
+            "movies": "Movies",
+            "others": "TV Shows"
+        },
         "tmpdir": "/tmp/",
         "keepLoadedTorrents": false,
         "startPaused": false,
         "filters": {
             "ongoing" : {
                 "prefer" : {
-                    "720p": 1,
+                    "1080p": 1,
+                    "720p": 0.9,
                     "mkv": 1,
                     "HorribleSubs": 1,
                     "Erai-raws": 0.9,
@@ -28,21 +34,24 @@
                 },
                 "exclude": [
                     "hardsubs",
-                    "dub"
+                    "dub",
+                    " raw "
                 ]
             },
             "finished" : {
                 "prefer" : {
+                    "1080p": 0.6,
                     "720p": 0.5,
                     "mkv": 1,
                     "Blu-ray": 1,
                     "HorribleSubs": 1,
                     "Erai-raws": 0.9,
-                    "freeleech": 0.5
+                    "freeleech": 0.5,
+                    "hardsubs": -1
                 },
                 "exclude": [
-                    "hardsubs",
-                    "dub"
+                    "dub",
+                    " raw "
                 ]
             }
         }
