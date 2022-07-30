@@ -5,7 +5,6 @@ import logging
 from pprint import pprint
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 def _title_comparator(listEntry, torrentCollection):
@@ -26,13 +25,13 @@ def _title_comparator(listEntry, torrentCollection):
 
 
 def selectCollection(listEntry, torrentCollections):
-    logger.info('Selecting torrent collection for "%s' % listEntry.title)
+    logger.info('Selecting torrent collection for "%s"' % listEntry.title)
     best = None
     for collection in torrentCollections:
         logger.debug('Analizing collection: "%s"' % collection.title)
         collection.score = - (
             0.1 * abs(listEntry.format - collection.format)
-            + _title_comparator(listEntry, collection) 
+            + _title_comparator(listEntry, collection)
             + 5 * abs(listEntry.year - collection.year))
         logger.debug('Collection score: "%f"' % collection.score)
 
@@ -48,6 +47,7 @@ def selectCollection(listEntry, torrentCollections):
 
 
 def _selectTorrentFromCollection(collection, filters, episode_filter=0):
+    logger.info('Selecting torrent from collection "%s"' % collection)
     best = None
     for torrent in collection.torrents:
         logger.debug('Analizing torrent: %s' % torrent)
@@ -90,13 +90,13 @@ def selectTorrentFromCollection(listEntry, collection, missingEpisodes):
 
     if not listEntry.ongoing and listEntry.episodes == len(missingEpisodes):
         logger.debug('Using finished filters')
-        torrent = _selectTorrentFromCollection(collection, config.get('downloads.filters.finished'))
+        torrent = _selectTorrentFromCollection(collection, config.get('torrentLoader.filters.finished'))
         if torrent:
             rtn.append(torrent)
     else:
         logger.debug('Using ongoing filters')
         logger.debug('Missing episodes: %s' % missingEpisodes)
-        filters = config.get('downloads.filters.ongoing')
+        filters = config.get('torrentLoader.filters.ongoing')
 
         for episode in missingEpisodes:
             logger.debug('Getting episode %d ' % episode)

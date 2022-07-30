@@ -6,7 +6,7 @@
         "username": "",
         "torrentPass": ""
     },
-    "downloads": {
+    "torrentLoader": {
         "torrentClient": {
             "address": "localhost",
             "port": 9091,

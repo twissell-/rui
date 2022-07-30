@@ -10,13 +10,22 @@ from core import config
 
 logger = logging.getLogger(__name__)
 
-class MediaListStatus(object):
+
+class MediaListStatus:
     CURRENT = 'CURRENT'
     PLANNING = 'PLANNING'
     COMPLETED = 'COMPLETED'
     DROPPED = 'DROPPED'
     PAUSED = 'PAUSED'
     REPEATING = 'REPEATING'
+
+class MediaStatus:
+    FINISHED = 'FINISHED'
+    RELEASING = 'RELEASING'
+    NOT_YET_RELEASED = 'NOT_YET_RELEASED'
+    CANCELLED = 'CANCELLED'
+    HIATUS = 'HIATUS'
+
 
 _QUERY = '''
 query ($username: String, $status: MediaListStatus) {
@@ -34,6 +43,7 @@ query ($username: String, $status: MediaListStatus) {
             native
             userPreferred
           }
+          status
           episodes
           format
           startDate {
@@ -94,7 +104,7 @@ class AnilistCache(object):
 
     @staticmethod
     def _getCacheFilePath(username, status):
-        return os.path.join(config.get('downloads.tmpdir'), 'rui-%s-%s.cache' % (username, status))
+        return os.path.join(config.get('torrentLoader.tmpdir'), 'rui-%s-%s.cache' % (username, status))
     
     @staticmethod
     def getCache(username, status):
@@ -153,6 +163,7 @@ class ListEntry(object):
         self._format = MediaFormat.map(raw_entry.get('media').get('format'))
         self._startYear = raw_entry.get('media').get('startDate').get('year')
         self._endYear = raw_entry.get('media').get('endDate').get('year')
+        self._airingStatus = raw_entry.get('media').get('status')
         self._score = raw_entry.get('score') or 0
 
     @property
@@ -204,15 +215,19 @@ class ListEntry(object):
         return self._format
 
     @property
+    def airingStatus(self):
+        return self._airingStatus
+
+    @property
     def score(self):
         return self._score
 
     @property
     def ongoing(self):
-        if self._endYear:
-            return False
-        else:
+        if self.airingStatus == MediaStatus.RELEASING:
             return True
+        else:
+            return False
 
     def __repr__(self):
         return '[%d] %s (%d/%d) %s' % (self.id, self.title, self.progress or 0, self.episodes or 0, 'Ongoing' if self.ongoing else 'Finished')

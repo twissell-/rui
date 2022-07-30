@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 def getDestinationPath(
     listEntry,
     createIfnotExits=False,
-    basePath=config.get('downloads.directory'),
-    divideByFormat=config.get('downloads.divideByFormat.enabled')):
+    basePath=config.get('torrentLoader.directory'),
+    divideByFormat=config.get('torrentLoader.divideByFormat.enabled')):
     '''Returns the destination (download) path for a given listEntry'''
 
     libdir = ''
     if divideByFormat:
-        divideByFormat = config.get('downloads.divideByFormat')
+        divideByFormat = config.get('torrentLoader.divideByFormat')
         libdir = divideByFormat.get('movies') if listEntry.format == MediaFormat.MOVIE else divideByFormat.get('others')
 
     rtn = os.path.join(
@@ -43,12 +43,12 @@ def getEpisodePath(listEntry, episodeNumber, destinationPath=None):
     # basename = os.path.basename(getDestinationPath(listEntry))
     # for path in glob.glob(os.path.join(getDestinationPath(listEntry), '*', search_string % episodeNumber)):
 
-    logger.info('Looking for episode: %s - %d with pattern "%s"' % (listEntry.title, episodeNumber, pattern))
+    logger.debug('Looking for episode: %s - %d with pattern "%s"' % (listEntry.title, episodeNumber, pattern))
     destinationPath = destinationPath or getDestinationPath(listEntry)
     episodeFullPath = None
     for rootDir, dirs, files in os.walk(destinationPath):
         if listEntry.episodes == 1 and len(files) >= 1:
-            logger.info('Single episode anime.')
+            logger.debug('Single episode anime.')
             episodeFullPath = os.path.join(destinationPath, files[0])
             
             return episodeFullPath
@@ -58,11 +58,11 @@ def getEpisodePath(listEntry, episodeNumber, destinationPath=None):
                 if pattern.search(filename):
                     logger.debug('Match: "%s"' % pattern.search(filename).group(0))
                     episodeFullPath = os.path.join(destinationPath, filename)
-                    logger.info('Episode %s found: "%s"' % (episodeNumber, episodeFullPath))
+                    logger.debug('Episode %s found: "%s"' % (episodeNumber, episodeFullPath))
                     
                     return episodeFullPath
 
-    logger.info('Episode %s not found.' % episodeNumber)
+    logger.debug('Episode %s not found.' % episodeNumber)
     return False
 
 
@@ -70,6 +70,7 @@ def getMissingEpisodes(listEntry, path=None):
     '''Returns a list of integers with the missing (not downloaded) episodes of a listEntry'''
     missingEpisodes = []
 
+    logger.info('Looking for missing episodes: "%s"' % listEntry.title)
     for episode in range(listEntry.firstEpisode, listEntry.lastEpisode + 1):
         if not getEpisodePath(listEntry, episode, path):
             missingEpisodes.append(episode)
@@ -77,6 +78,7 @@ def getMissingEpisodes(listEntry, path=None):
                 # if the anime is ongoing, just look for the next missing episode.
                 break
 
+    logger.info('Missing episodes: %s' % missingEpisodes)
     return missingEpisodes
 
 
@@ -93,7 +95,7 @@ def getEpisodes(listEntry, path=None):
 
 def downloadFile(url, filename=None):
     '''Downloads the given url into the tmpdir. returns de full path on success, False otherwise'''
-    tmpdir = config.get('downloads.tmpdir')
+    tmpdir = config.get('torrentLoader.tmpdir')
     filename = os.path.join(tmpdir, filename) if filename else tempfile.mktemp(prefix='rui-', suffix='.tmp', dir='/tmp/')
 
     try:

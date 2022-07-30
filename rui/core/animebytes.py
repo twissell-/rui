@@ -68,7 +68,9 @@ class TorrentCollection(object):
         self._year = int(raw_collection.get('Year'))
         links = raw_collection.get('Links')
         self._anidb = links.get('AniDB') if links else None
+        self._url = 'https://animebytes.tv/torrents.php?id=%d' % raw_collection.get('ID')
         self._torrents = []
+
 
         for torrent in raw_collection.get('Torrents'):
             self._torrents.append(Torrent(torrent))
@@ -94,6 +96,9 @@ class TorrentCollection(object):
     @property
     def anidb(self):
         return self._anidb
+    @property
+    def url(self):
+        return self._url
 
     @property
     def torrents(self):
@@ -108,7 +113,7 @@ class TorrentCollection(object):
         self._selectorScore = value
 
     def __repr__(self):
-        return '%s (%s) [%s] - %d torrents' % (self.title, self.format.name, self.year, len(self.torrents))
+        return '%s (%s) [%s] - %d torrents - %s' % (self.title, self.format.name, self.year, len(self.torrents), self.url)
 
 
 

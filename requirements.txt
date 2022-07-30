@@ -3,3 +3,5 @@ requests
 transmissionrpc
 tabulate
 python-qbittorrent
+typer[all]
+rich
