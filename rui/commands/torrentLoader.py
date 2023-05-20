@@ -93,13 +93,13 @@ def load_current(dry_run: bool, id_: int):
                     tags=tags,
                 )
 
-            anime_data = persistence.get(anime.id)
-            if not anime_data.get("loaded_episodes"):
-                anime_data["loaded_episodes"] = [torrent.episode]
-            else:
-                anime_data.get("loaded_episodes").append(torrent.episode)
+                anime_data = persistence.get(anime.id)
+                if not anime_data.get("loaded_episodes"):
+                    anime_data["loaded_episodes"] = [torrent.episode]
+                else:
+                    anime_data.get("loaded_episodes").append(torrent.episode)
 
-            persistence.set(anime.id, anime_data)
+                persistence.set(anime.id, anime_data)
 
     for line in output:
         print(line)
