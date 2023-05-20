@@ -84,9 +84,12 @@ def getMissingEpisodes(listEntry, path=None):
     missingEpisodes = []
     anime_data = persistence.get(listEntry.id)
 
+    if not anime_data.get("loaded_episodes"):
+        anime_data["loaded_episodes"] = []
+
     logger.info('Looking for missing episodes: "%s"' % listEntry.title)
     for episode in range(listEntry.firstEpisode, listEntry.lastEpisode + 1):
-        if anime_data and episode in (anime_data.get("loaded_episodes") or []):
+        if anime_data and episode in anime_data.get("loaded_episodes"):
             continue
 
         if getEpisodePath(listEntry, episode, path):
