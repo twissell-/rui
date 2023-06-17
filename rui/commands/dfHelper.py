@@ -2,7 +2,7 @@ import datetime
 import os.path
 
 
-from core import anilist
+from rui import anilist
 
 
 def spec(anime_id):

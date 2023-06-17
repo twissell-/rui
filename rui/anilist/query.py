@@ -1,5 +1,3 @@
-from core.common import MediaFormat
-
 ENDPOINT = "https://graphql.anilist.co"
 
 LIST_BY_USERNAME_AND_STATUS = """
@@ -36,7 +34,6 @@ query ($username: String, $status: MediaListStatus) {
   }
 }
 """
-
 
 MEDIA_BY_ID = """
     query ($id: Int) {

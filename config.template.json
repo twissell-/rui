@@ -9,7 +9,7 @@
     "torrentLoader": {
         "lists": {
             "watching": true,
-            "customPlanning": "rui"
+            "customList": "rui"
         },
         "torrentClient": {
             "address": "localhost",

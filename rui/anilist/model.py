@@ -1,14 +1,11 @@
-import requests
 import json
 import logging
 import os
 from glob import glob
 from datetime import datetime
-from typing import List
 
-from core import config
-from core import anilist_query
-from core.common import MediaFormat
+from rui.common import config
+from rui.common.utils import MediaFormat
 
 logger = logging.getLogger(__name__)
 
@@ -28,55 +25,6 @@ class MediaStatus:
     NOT_YET_RELEASED = "NOT_YET_RELEASED"
     CANCELLED = "CANCELLED"
     HIATUS = "HIATUS"
-
-
-def getWatchingListByUsername(username):
-    return getListByUsernameAndStatus(username, MediaListStatus.CURRENT)
-
-
-def getCompletedListByUsername(username):
-    return getListByUsernameAndStatus(username, MediaListStatus.COMPLETED)
-
-
-def getPlanningCustomList(username, custom_list_name):
-    return [
-        anime
-        for anime in getListByUsernameAndStatus(username, MediaListStatus.PLANNING)
-        if custom_list_name.lower() in anime.customLists
-    ]
-
-
-def getListByUsernameAndStatus(username, status):
-
-    cache = AnilistCache.getCache(username, status)
-    if config.get("cache.enabled") and cache:
-        logger.info("Getting watching list from cache.")
-        entries = cache
-    else:
-        response = requests.post(
-            anilist_query.ENDPOINT,
-            json={
-                "query": anilist_query.LIST_BY_USERNAME_AND_STATUS,
-                "variables": {"username": username, "status": status},
-            },
-        ).json()
-        entries = (
-            response.get("data")
-            .get("MediaListCollection")
-            .get("lists")[0]
-            .get("entries")
-        )
-        logger.debug("Raw response: " + json.dumps(entries, indent=2))
-
-        if config.get("cache.enabled"):
-            AnilistCache.writeCache(username, status, entries)
-
-    rtn = []
-    for entry in entries:
-        rtn.append(ListEntry(entry))
-
-    logger.debug("Mapped respose: " + str(rtn))
-    return rtn
 
 
 class AnilistCache(object):
@@ -228,32 +176,3 @@ class ListEntry(object):
 
     def __lt__(self, other):
         return self.title < other.title
-
-
-def getAnimeSpecById(anime_id):
-    response = requests.post(
-        anilist_query.ENDPOINT,
-        json={"query": anilist_query.MEDIA_BY_ID, "variables": {"id": anime_id}},
-    ).json()
-
-    return response["data"]["Media"]
-
-
-def getCompletedAnimes(since: str) -> List[dict]:
-    response = requests.post(
-        anilist_query.ENDPOINT,
-        json={
-            "query": anilist_query.COMPLETED_BY_USERNAME_AND_SINCE,
-            "variables": {
-                "username": config.get("anilist_todoist.username"),
-                "status": "COMPLETED",
-                "since": since,
-            },
-        },
-    ).json()
-
-    lists = response["data"]["MediaListCollection"]["lists"]
-    if not lists:
-        return []
-
-    return response["data"]["MediaListCollection"]["lists"][0]["entries"]

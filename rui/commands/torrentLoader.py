@@ -1,10 +1,12 @@
 import logging
 from rich import print
 
-from core import fileManager, anilist, config, selector, animebytes
-from core.anilist import MediaStatus
-from core.torrentClient import TorrentClient, QBitTorrentClient
-from core import persistence
+from rui import anilist
+from rui import animebytes
+from rui.common import fileManager, config, persistence
+from rui.anilist.model import MediaStatus
+from rui.torrent.client import QBitTorrentClient
+from rui.torrent import selector
 
 
 def load_current(dry_run: bool, id_: int):
@@ -16,10 +18,10 @@ def load_current(dry_run: bool, id_: int):
     if config.get("torrentLoader.lists.watching"):
         animes += anilist.getWatchingListByUsername(config.get("anilist.username"))
 
-    if config.get("torrentLoader.lists.customPlanning"):
+    if config.get("torrentLoader.lists.customList"):
         animes += anilist.getPlanningCustomList(
             config.get("anilist.username"),
-            config.get("torrentLoader.lists.customPlanning"),
+            config.get("torrentLoader.lists.customList"),
         )
 
     animes = [

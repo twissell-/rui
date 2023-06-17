@@ -1,7 +1,8 @@
 from datetime import datetime
 import json
 import logging
-from core import config
+
+from rui.common import config
 
 _path = config.get("persistence.path")
 logger = logging.getLogger(__name__)
@@ -14,6 +15,11 @@ def get(key: str):
         with open(_path, "r") as data_file:
             data = json.load(data_file)
     except FileNotFoundError:
+        with open(_path, "w") as data_file:
+            json.dump({}, data_file)
+
+        return get(key)
+    except json.JSONDecodeError:
         with open(_path, "w") as data_file:
             json.dump({}, data_file)
 
