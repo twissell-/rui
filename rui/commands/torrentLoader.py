@@ -1,12 +1,12 @@
 import logging
+
 from rich import print
 
-from rui import anilist
-from rui import animebytes
-from rui.common import fileManager, config, persistence
+from rui import anilist, animebytes
 from rui.anilist.model import MediaStatus
-from rui.torrent.client import QBitTorrentClient
+from rui.common import config, fileManager, persistence
 from rui.torrent import selector
+from rui.torrent.client import QBitTorrentClient
 
 
 def load_current(dry_run: bool, id_: int):

@@ -1,5 +1,6 @@
-from Levenshtein import distance
 import logging
+
+from Levenshtein import distance
 
 from rui.common import config
 

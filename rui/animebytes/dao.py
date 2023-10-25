@@ -1,12 +1,12 @@
-import requests
 import json
 import logging
 from time import sleep
 
+import requests
+
+from rui.animebytes.model import TorrentCollection
 from rui.common import config
 from rui.common.utils import sanitize
-from rui.animebytes.model import TorrentCollection
-
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,6 @@ _ENDPOINT = "https://animebytes.tv/scrape.php?torrent_pass={torrentPass}&format=
 
 
 def getTorrentCollectionByAnime(anime):
-
     rtn = []
     if anime.title and not rtn:
         rtn = getTorrentCollectionByTitle(anime.title)

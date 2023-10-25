@@ -1,7 +1,6 @@
 import datetime
 import os.path
 
-
 from rui import anilist
 
 

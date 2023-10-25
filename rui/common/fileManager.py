@@ -1,12 +1,12 @@
+import logging
 import os
 import re
-import logging
-import requests
 import tempfile
 
-from rui.common import config, persistence
-from rui.common.utils import sanitize, MediaFormat
+import requests
 
+from rui.common import config, persistence
+from rui.common.utils import MediaFormat, sanitize
 
 logger = logging.getLogger(__name__)
 

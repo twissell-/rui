@@ -1,11 +1,12 @@
-import requests
 import json
 import logging
 from typing import List
 
-from rui.common import config
+import requests
+
 from rui.anilist import query
-from rui.anilist.model import MediaListStatus, ListEntry, AnilistCache
+from rui.anilist.model import AnilistCache, ListEntry, MediaListStatus
+from rui.common import config
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,6 @@ def getPlanningCustomList(username, custom_list_name):
 
 
 def getListByUsernameAndStatus(username, status):
-
     cache = AnilistCache.getCache(username, status)
     if config.get("cache.enabled") and cache:
         logger.info("Getting watching list from cache.")

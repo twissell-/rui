@@ -1,5 +1,5 @@
-import transmissionrpc
 import qbittorrent
+import transmissionrpc
 
 from rui.common import config
 

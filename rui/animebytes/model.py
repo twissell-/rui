@@ -2,7 +2,6 @@ import logging
 
 from rui.common.utils import MediaFormat
 
-
 logger = logging.getLogger(__name__)
 
 
