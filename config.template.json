@@ -4,7 +4,8 @@
     },
     "animebytes": {
         "username": "",
-        "torrentPass": ""
+        "torrentPass": "",
+        "requestInterval": 4
     },
     "torrentLoader": {
         "lists": {
