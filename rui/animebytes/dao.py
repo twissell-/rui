@@ -16,6 +16,8 @@ _ENDPOINT = "https://animebytes.tv/scrape.php?torrent_pass={torrentPass}&format=
 
 def getTorrentCollectionByAnime(anime):
     rtn = []
+    if anime.searchString and not rtn:
+        rtn = getTorrentCollectionByTitle(anime.searchString)
     if anime.title and not rtn:
         rtn = getTorrentCollectionByTitle(anime.title)
     if anime.romaji and not rtn:

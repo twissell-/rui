@@ -1,8 +1,8 @@
 import json
 import logging
 import os
-from glob import glob
 from datetime import datetime
+from glob import glob
 
 from rui.common import config
 from rui.common.utils import MediaFormat
@@ -97,6 +97,9 @@ class ListEntry(object):
             key for key, value in raw_entry.get("customLists").items() if value
         ]
         self._score = raw_entry.get("score") or 0
+        self._searchString = config.get(
+            "valueOverride." + str(self._id) + ".searchString"
+        )
 
     @property
     def id(self):
@@ -164,6 +167,10 @@ class ListEntry(object):
             return True
         else:
             return False
+
+    @property
+    def searchString(self):
+        return self._searchString
 
     def __repr__(self):
         return "[%d] %s (%d/%d) %s" % (
