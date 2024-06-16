@@ -1,6 +1,6 @@
 python-Levenshtein
 requests
 transmissionrpc
-python-qbittorrent
+qbittorrent-api
 typer[all]
 rich
