@@ -1,6 +1,7 @@
 python-Levenshtein
 requests
 transmissionrpc
-qbittorrent-api
+# keep this version untill ultra.cc updates its python version.
+qbittorrent-api==2023.9.53
 typer[all]
 rich
