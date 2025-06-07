@@ -166,8 +166,6 @@ def generate(directory: str, label: str = None, verbose: bool = False):
         key=lambda x: x[0],
     )
 
-    print(score, entry.title)
-
     if score > score_limit:
         logger.error(
             f"Lower score ({score} {entry}) higher that {score_limit} for {title}"
