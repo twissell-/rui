@@ -2,7 +2,9 @@
 
 import logging
 from logging.handlers import RotatingFileHandler
+
 import typer
+from typing_extensions import Annotated
 
 from rui import commands
 
@@ -19,7 +21,7 @@ log_handler.setFormatter(
 root_logger.addHandler(log_handler)
 log_handler.doRollover()
 
-rui = typer.Typer()
+rui = typer.Typer(name="rui", no_args_is_help=True, add_completion=False)
 
 
 @rui.command(
@@ -41,9 +43,32 @@ def load(
     commands.load_current(dry_run, id)
 
 
-@rui.command(help="Creates a spec file for a given anime.")
-def spec(anime_id: int):
-    commands.spec(anime_id)
+@rui.command(
+    help="Generates metadata for the anime and files to be used as an inventory."
+)
+def metadata(
+    directory: Annotated[str, typer.Argument(help="The direcotry to scan.")],
+    label: Annotated[
+        str,
+        typer.Option(help="Add label to generated metadata."),
+    ] = None,
+    full_scan: Annotated[
+        bool,
+        typer.Option(
+            help="Generates metadata for all anime directories inside a given directory."
+        ),
+    ] = False,
+    recreate: Annotated[
+        bool, typer.Option(help="Forces recreate already existing metadata.")
+    ] = False,
+    verbose: Annotated[bool, typer.Option()] = False,
+):
+    if full_scan:
+        commands.full_scan(
+            directory=directory, label=label, recreate=recreate, verbose=verbose
+        )
+    else:
+        commands.generate(directory=directory, label=label, verbose=verbose)
 
 
 if __name__ == "__main__":

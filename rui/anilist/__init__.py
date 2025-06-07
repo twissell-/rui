@@ -1,4 +1,5 @@
-from rui.anilist.dao import (
+from rui.anilist.dao import (  # searchAnime,
+    getAnimeById,
     getCompletedListByUsername,
     getListByUsernameAndStatus,
     getPlanningCustomList,

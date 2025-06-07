@@ -29,6 +29,11 @@ query ($username: String, $status: MediaListStatus) {
         }
         progress
         notes
+        completedAt {
+          day
+          month
+          year
+        }
       }
     }
   }
@@ -36,82 +41,76 @@ query ($username: String, $status: MediaListStatus) {
 """
 
 MEDIA_BY_ID = """
-    query ($id: Int) {
-        Media(id: $id) {
-        id
-        title {
-            romaji
-            english
-            native
-            userPreferred
-        }
-        startDate {
-            year
-            month
-            day
-        }
-        format
-        episodes
-        duration
-        season
-        seasonYear
-        source
-        coverImage {
-            extraLarge
-            color
-        }
-        relations {
-            edges {
-            id
-            relationType
-            node {
-                id
-                type
-                title {
-                romaji
-                userPreferred
-                }
-            }
-            }
-        }
-        staff {
-            edges {
-            id
-            role
-            node {
-                id
-                name {
-                full
-                }
-            }
-            }
-        }
-        }
+query ($id: Int) {
+  Media(id: $id) {
+    id
+    title {
+      romaji
+      english
+      native
+      userPreferred
     }
+    startDate {
+      year
+      month
+      day
+    }
+    endDate {
+      year
+      month
+      day
+    }
+    format
+    episodes
+    duration
+    season
+    seasonYear
+    source
+    status
+    coverImage {
+      extraLarge
+      color
+    }
+  }
+}
 """
 
-COMPLETED_BY_USERNAME_AND_SINCE = """
-    query ($username: String, $since: FuzzyDateInt) {
-        MediaListCollection(userName: $username, type: ANIME, status: COMPLETED, completedAt_greater: $since) {
-        lists {
-            name
-            status
-            entries {
-            score(format: POINT_10_DECIMAL)
-            media {
-                id
-                title {
-                userPreferred
-                }
-                siteUrl
-            }
-            completedAt {
-                year
-                month
-                day
-            }
-            }
-        }
-        }
-    }
-"""
+# MEDIA_SEARCH = """
+# query ($search: String, $format_not_in: [MediaFormat]) {
+# 	Page {
+#     pageInfo {
+#       hasNextPage
+#     }
+#     media(search: $search, format_not_in:$format_not_in) {
+#       id
+#       title {
+#         romaji
+#         english
+#         native
+#         userPreferred
+#       }
+#       startDate {
+#         year
+#         month
+#         day
+#       }
+#       endDate {
+#         year
+#         month
+#         day
+#       }
+#       format
+#       episodes
+#       duration
+#       season
+#       seasonYear
+#       source
+#       status
+#       coverImage {
+#         extraLarge
+#         color
+#       }
+#     }
+#   }
+# }
+# """

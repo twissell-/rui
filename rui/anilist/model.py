@@ -1,10 +1,10 @@
 import json
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from glob import glob
 
-from rui.common import config
+from rui.common import config, persistence
 from rui.common.utils import MediaFormat
 
 logger = logging.getLogger(__name__)
@@ -29,48 +29,112 @@ class MediaStatus:
 
 class AnilistCache(object):
     @staticmethod
-    def _getCacheFilePath(username, status):
-        return os.path.join(
-            config.get("torrentLoader.tmpdir"), "rui-%s-%s.cache" % (username, status)
-        )
+    def _getCacheFilePath():
+        return os.path.join(config.get("torrentLoader.tmpdir"), "rui.cache")
 
     @staticmethod
-    def getCache(username, status):
-        cachePath = AnilistCache._getCacheFilePath(username, status)
-        now = datetime.now().timestamp()
+    def getCache(cache_key: str) -> dict | None:
+        cachePath = AnilistCache._getCacheFilePath()
+        # now = datetime.now().timestamp()
 
-        try:
-            cacheFile = open(cachePath)
-            cache = json.load(cacheFile)
+        cache = persistence.get(cache_key, path=cachePath)
 
-            cacheLifetime = (now - cache.get("ts")) / 60
-            if cacheLifetime > config.get("cache.expiration"):
-                return False
-
-        except OSError as err:
+        if not cache:
             return False
-        except json.JSONDecodeError as err:
+
+        if not cache.get("_last_update"):
             return False
-        else:
-            return cache.get("data")
+
+        last_update = datetime.strptime(cache["_last_update"], "%Y-%m-%d %H:%M:%S")
+
+        if (datetime.now() - last_update) > timedelta(
+            seconds=config.get("cache.expiration")
+        ):
+            return False
+
+        return cache.get("data")
 
     @staticmethod
-    def writeCache(username, status, data):
-        cachePath = AnilistCache._getCacheFilePath(username, status)
-        ts = datetime.now().timestamp()
+    def writeCache(cache_key: str, data: dict) -> None:
+        cachePath = AnilistCache._getCacheFilePath()
+
+        persistence.set(cache_key, {"data": data}, path=cachePath, indent=None)
+
+        logger.info(f'Cache "{cache_key}" updated.')
+        return
 
         with open(cachePath, "w") as cacheFile:
-            json.dump({"ts": ts, "data": data}, cacheFile)
-        logger.info('Cache "%s" updated. ts: %f' % (cachePath, ts))
+            json.dump({"data": data}, cacheFile)
 
     @staticmethod
     def clearCache():
-        cachePath = AnilistCache._getCacheFilePath("*", "*")
+        cachePath = AnilistCache._getCacheFilePath()
 
         fileList = glob(cachePath)
         for filePath in fileList:
             os.remove(filePath)
             logger.info("Deleted file : %s" % filePath)
+
+
+class AnimeMedia(object):
+    def __init__(self, raw_media):
+        super(AnimeMedia, self).__init__()
+        self.id = raw_media.get("id")
+        self.title = config.get(
+            "valueOverride." + str(self.id) + ".title"
+        ) or raw_media.get("title").get("userPreferred")
+        self.english = raw_media.get("title").get("english")
+        self.romaji = raw_media.get("title").get("romaji")
+        self.native = raw_media.get("title").get("native")
+        self.episodes = raw_media.get("episodes") or 98
+        self.duration = raw_media.get("duration")
+        self.firstEpisode = (
+            config.get("valueOverride." + str(self.id) + ".firstEpisode") or 1
+        )
+        self.format = MediaFormat.map(raw_media.get("format"))
+        self.startYear = raw_media.get("startDate").get("year")
+        self.endYear = raw_media.get("endDate").get("year")
+        self.season = raw_media.get("season")
+        self.status = raw_media.get("status")
+        self.source = raw_media.get("source")
+        self.searchString = config.get(
+            "valueOverride." + str(self.id) + ".searchString"
+        )
+        self.converImage = raw_media.get("coverImage").get("extraLarge")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "titles": {
+                "english": self.english,
+                "romaji": self.romaji,
+                "native": self.native,
+            },
+            "episodes": self.episodes,
+            "duration": self.duration,
+            "firstEpisode": self.firstEpisode,
+            "format": self.format.name,
+            "startYear": self.startYear,
+            "endYear": self.endYear,
+            "season": self.season,
+            "status": self.status,
+            "source": self.source,
+            "converImage": self.converImage,
+        }
+
+    def __repr__(self):
+        return "[%d] %s %s %d %s" % (
+            self.id,
+            self.title,
+            self.format.name,
+            self.startYear,
+            self.status,
+        )
+
+    @property
+    def lastEpisode(self):
+        return self.firstEpisode + self.episodes - 1
 
 
 class ListEntry(object):
@@ -100,6 +164,14 @@ class ListEntry(object):
         self._searchString = config.get(
             "valueOverride." + str(self._id) + ".searchString"
         )
+        if raw_entry.get("completedAt").get("year"):
+            self.completedAt = datetime(
+                raw_entry.get("completedAt").get("year"),
+                raw_entry.get("completedAt").get("month", 1),
+                raw_entry.get("completedAt").get("day", 1),
+            )
+        else:
+            self.completedAt = None
 
     @property
     def id(self):

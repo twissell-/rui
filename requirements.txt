@@ -5,3 +5,4 @@ transmissionrpc
 qbittorrent-api==2023.9.53
 typer[all]
 rich
+pymediainfo
