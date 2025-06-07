@@ -31,7 +31,7 @@ def get(key: str, path: str = _path):
     return data[key]
 
 
-def set(key: str, value: dict, path: str = _path, indent: int | None = 2):
+def set(key: str, value: dict, path: str = _path, indent: int = 2):
     key = str(key)
 
     with open(path, "r") as data_file:
