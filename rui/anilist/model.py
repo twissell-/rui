@@ -33,7 +33,7 @@ class AnilistCache(object):
         return os.path.join(config.get("torrentLoader.tmpdir"), "rui.cache")
 
     @staticmethod
-    def getCache(cache_key: str) -> dict | None:
+    def getCache(cache_key: str) -> dict:
         cachePath = AnilistCache._getCacheFilePath()
         # now = datetime.now().timestamp()
 
