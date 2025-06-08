@@ -66,6 +66,8 @@ def _get_file_metadata(file_path: str) -> dict:
 
                 file_metadata["audio"].append(
                     {
+                        "title": track.title,
+                        "language": track.language,
                         "format": track.format,
                         "sampling_rate": track.other_sampling_rate[0],
                         "compression_mode": track.compression_mode,
@@ -197,7 +199,7 @@ def generate(directory: str, label: str = None, verbose: bool = False):
         if file_metadata:
             metadata["files"].append(file_metadata)
 
-    logger.debug("Checing for extra files.")
+    logger.debug("Checking for extra files.")
     scanned_files = [
         os.path.join(absolute_path, f["file_name"]) for f in metadata["files"]
     ]
