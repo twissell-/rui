@@ -134,7 +134,7 @@ def full_scan(
             metadata["failed_directories"].append(dir_path)
 
     with open("./metadata.json", "w") as metadata_file:
-        json.dump(metadata, metadata_file, indent=2)
+        json.dump(metadata, metadata_file, indent=2, default=str)
 
     return metadata
 
