@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 import os
@@ -15,19 +16,6 @@ from rui.common import config, fileManager
 
 logger = logging.getLogger(__name__)
 _metadata_file_name = "metadata.json"
-
-
-def _get_anime_metadata(anime: ListEntry) -> dict:
-
-    metadata = anilist.getAnimeById(anime.id)
-
-    if metadata.get("coverImage"):
-        metadata["coverImage"] = metadata["coverImage"]["extraLarge"]
-
-    if metadata.get("relations"):
-        metadata["relations"] = metadata["relations"]["edges"]
-
-    return metadata
 
 
 def _get_file_metadata(file_path: str) -> dict:
@@ -96,8 +84,101 @@ def _get_file_metadata(file_path: str) -> dict:
     return file_metadata
 
 
-def full_scan(
-    directory: str, label: str = None, recreate: bool = False, verbose: bool = False
+def _flat_anime_metadata(directory: dict) -> dict:
+    anime = directory["anime"]
+
+    anime.pop("titles")
+    anime["extra_files"] = "\n".join(directory.get("extra_files", []))
+    anime["generation_date"] = directory.get("generation_date")
+    anime["original_directory"] = directory.get("original_directory")
+
+    return anime
+
+
+def _flat_files_metadata(directory: dict) -> dict:
+    anime = directory["anime"]
+    files = []
+
+    for file in directory["files"]:
+        video = file["video"]
+        file["video"] = (
+            f"{video.get('format')} | {video.get('codec')} | {video.get('resolution')} | {video.get('aspect_ration')} | {video.get('frame_rate')}"
+        )
+
+        if file.get("audio"):
+            audio = file["audio"]
+            file["audio"] = "\n".join(
+                [
+                    f"{a.get('title')} ({a.get('language')}) | {a.get('format')} | {a.get('sampling_rate')} | {a.get('compression_mode')}"
+                    for a in audio
+                ]
+            )
+
+        if file.get("subtitles"):
+            subtitles = file["subtitles"]
+            file["subtitles"] = "\n".join(
+                [
+                    f"{s.get('title')} ({s.get('language')}) | {s.get('format')}"
+                    for s in subtitles
+                ]
+            )
+
+        file["anime_id"] = anime.get("id")
+
+        files.append(file)
+
+    return files
+
+
+def _write_metadata_as_csv(metadata: dict, output_dir) -> dict:
+    label = metadata.get("label")
+    generation_date = metadata.get("generation_date")
+    anime_file = os.path.join(
+        output_dir,
+        f"metadata-{label + '-' if label else ''}{generation_date.replace(' ', '_') + '-' if generation_date else ''}anime.csv",
+    )
+    files_file = os.path.join(
+        output_dir,
+        f"metadata-{label + '-' if label else ''}{generation_date.replace(' ', '_') + '-' if generation_date else ''}files.csv",
+    )
+    failed_file = os.path.join(
+        output_dir,
+        f"metadata-{label + '-' if label else ''}{generation_date.replace(' ', '_') + '-' if generation_date else ''}failed.csv",
+    )
+
+    animes = [_flat_anime_metadata(directory) for directory in metadata["directories"]]
+    with open(anime_file, "w", newline="") as f:
+        w = csv.DictWriter(f, animes[0].keys())
+        w.writeheader()
+        w.writerows(animes)
+
+    files = []
+    [
+        files.extend(_flat_files_metadata(directory))
+        for directory in metadata["directories"]
+    ]
+    with open(files_file, "w", newline="") as f:
+        w = csv.DictWriter(f, files[0].keys())
+        w.writeheader()
+        w.writerows(files)
+
+    failed = [
+        {"failed_directories": directory}
+        for directory in metadata["failed_directories"]
+    ]
+    with open(failed_file, "w", newline="") as f:
+        w = csv.DictWriter(f, failed[0].keys())
+        w.writeheader()
+        w.writerows(failed)
+
+
+def full_scan_metadata(
+    directory: str,
+    label: str = None,
+    output_dir: str = ".",
+    format: str = "json",
+    recreate: bool = False,
+    verbose: bool = False,
 ):
     absolute_path = abspath(directory)
     metadata = {}
@@ -128,20 +209,23 @@ def full_scan(
             with open(metadata_file_path, "r") as metadata_file:
                 dir_metadata = json.load(metadata_file)
         else:
-            dir_metadata = generate(dir_path)
+            dir_metadata = generate_metadata(dir_path)
 
         if dir_metadata:
             metadata["directories"].append(dir_metadata)
         else:
             metadata["failed_directories"].append(dir_path)
 
-    with open("./metadata.json", "w") as metadata_file:
-        json.dump(metadata, metadata_file, indent=2, default=str)
+    if format == "json":
+        with open(os.path.join(output_dir, "metadata.json"), "w") as metadata_file:
+            json.dump(metadata, metadata_file, indent=2, default=str)
+    elif format == "csv":
+        _write_metadata_as_csv(metadata, output_dir)
 
     return metadata
 
 
-def generate(directory: str, label: str = None, verbose: bool = False):
+def generate_metadata(directory: str, label: str = None, verbose: bool = False):
     absolute_path = abspath(directory)
     title = basename(absolute_path)
     score_limit = 2

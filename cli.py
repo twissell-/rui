@@ -43,32 +43,55 @@ def load(
     commands.load_current(dry_run, id)
 
 
-@rui.command(
-    help="Generates metadata for the anime and files to be used as an inventory."
-)
-def metadata(
+@rui.command(help="Generate metadata for an anime directory.")
+def generate_metadata(
     directory: Annotated[str, typer.Argument(help="The direcotry to scan.")],
     label: Annotated[
         str,
         typer.Option(help="Add label to generated metadata."),
     ] = None,
-    full_scan: Annotated[
-        bool,
-        typer.Option(
-            help="Generates metadata for all anime directories inside a given directory."
-        ),
+    verbose: Annotated[
+        bool, typer.Option(help="Print the generated metadata.")
     ] = False,
+):
+    commands.generate_metadata(directory=directory, label=label, verbose=verbose)
+
+
+@rui.command(
+    help="Generate metadata for all anime directories inside the given directory."
+)
+def full_scan_metadata(
+    directory: Annotated[str, typer.Argument(help="The direcotry to scan.")],
+    label: Annotated[
+        str,
+        typer.Option(help="Add label to generated metadata."),
+    ] = None,
+    output_dir: Annotated[
+        str,
+        typer.Option(help="Directory to place generated files."),
+    ] = ".",
+    format: Annotated[
+        str,
+        typer.Option(
+            help="Format of the generated metadata files. Supported formats: csv, json."
+        ),
+    ] = "json",
     recreate: Annotated[
         bool, typer.Option(help="Forces recreate already existing metadata.")
     ] = False,
-    verbose: Annotated[bool, typer.Option()] = False,
+    verbose: Annotated[bool, typer.Option(help="Show progress")] = False,
 ):
-    if full_scan:
-        commands.full_scan(
-            directory=directory, label=label, recreate=recreate, verbose=verbose
-        )
-    else:
-        commands.generate(directory=directory, label=label, verbose=verbose)
+    if format not in ["csv", "json"]:
+        raise typer.BadParameter("supported formats are csv or json.")
+
+    commands.full_scan_metadata(
+        directory=directory,
+        label=label,
+        output_dir=output_dir,
+        format=format,
+        recreate=recreate,
+        verbose=verbose,
+    )
 
 
 if __name__ == "__main__":
