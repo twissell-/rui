@@ -29,6 +29,34 @@ def getPlanningCustomList(username, custom_list_name) -> List[ListEntry]:
     ]
 
 
+def getListEntryByAnimeId(username, anime_id) -> ListEntry:
+    """Returns the ListEntry for a given anime_id and username."""
+
+    logger.debug(f"Searching list entry for anime_id {anime_id} in completed list.")
+    entries = [e for e in getCompletedListByUsername(username) if e.id == anime_id]
+
+    if entries:
+        return entries[0]
+
+    logger.debug(f"Searching list entry for anime_id {anime_id} in watching list.")
+    entries = [e for e in getWatchingListByUsername(username) if e.id == anime_id]
+
+    if entries:
+        return entries[0]
+
+    logger.debug(f"Searching list entry for anime_id {anime_id} in planning list.")
+    entries = [
+        e
+        for e in getListByUsernameAndStatus(username, MediaListStatus.PLANNING)
+        if e.id == anime_id
+    ]
+
+    if entries:
+        return entries[0]
+
+    return None
+
+
 def _wait_request_limit() -> None:
     request_interval = config.get("anilist.requestInterval") or 2
 
@@ -107,32 +135,30 @@ def getAnimeById(anime_id):
     return AnimeMedia(response["data"]["Media"])
 
 
-# def searchAnime(search_string: str):
-#     cache_key = f"search-{search_string}"
-#     cache = AnilistCache.getCache(cache_key)
-#     excluded_formats = ["MUSIC", "MANGA", "NOVEL", "ONE_SHOT"]
+def searchAnime(search_string: str):
+    cache_key = f"search-{search_string}"
+    cache = AnilistCache.getCache(cache_key)
+    excluded_formats = ["MUSIC", "MANGA", "NOVEL", "ONE_SHOT"]
 
-#     if config.get("cache.enabled") and cache:
-#         logger.info(f"Getting search results for '{search_string}' from cache.")
-#         response = cache
-#     else:
-#         _wait_request_limit()
-#         response = requests.post(
-#             query.ENDPOINT,
-#             json={
-#                 "query": query.MEDIA_SEARCH,
-#                 "variables": {"search": search_string},
-#                 "format_not_in": excluded_formats,  # doesn't works..
-#             },
-#         ).json()
+    if config.get("cache.enabled") and cache:
+        logger.info(f"Getting search results for '{search_string}' from cache.")
+        response = cache
+    else:
+        _wait_request_limit()
+        response = requests.post(
+            query.ENDPOINT,
+            json={
+                "query": query.MEDIA_SEARCH,
+                "variables": {"search": search_string},
+                "format_not_in": excluded_formats,  # doesn't works..
+            },
+        ).json()
 
-#         print(response)
+        if config.get("cache.enabled"):
+            AnilistCache.writeCache(cache_key, response)
 
-#         if config.get("cache.enabled"):
-#             AnilistCache.writeCache(cache_key, response)
-
-#     return [
-#         AnimeMedia(r)
-#         for r in response["data"]["Page"]["media"]
-#         if r["format"] not in excluded_formats
-#     ]
+    return [
+        AnimeMedia(r)
+        for r in response["data"]["Page"]["media"]
+        if r["format"] not in excluded_formats
+    ]

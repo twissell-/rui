@@ -75,42 +75,42 @@ query ($id: Int) {
 }
 """
 
-# MEDIA_SEARCH = """
-# query ($search: String, $format_not_in: [MediaFormat]) {
-# 	Page {
-#     pageInfo {
-#       hasNextPage
-#     }
-#     media(search: $search, format_not_in:$format_not_in) {
-#       id
-#       title {
-#         romaji
-#         english
-#         native
-#         userPreferred
-#       }
-#       startDate {
-#         year
-#         month
-#         day
-#       }
-#       endDate {
-#         year
-#         month
-#         day
-#       }
-#       format
-#       episodes
-#       duration
-#       season
-#       seasonYear
-#       source
-#       status
-#       coverImage {
-#         extraLarge
-#         color
-#       }
-#     }
-#   }
-# }
-# """
+MEDIA_SEARCH = """
+query ($search: String, $format_not_in: [MediaFormat]) {
+	Page {
+    pageInfo {
+      hasNextPage
+    }
+    media(search: $search, format_not_in:$format_not_in) {
+      id
+      title {
+        romaji
+        english
+        native
+        userPreferred
+      }
+      startDate {
+        year
+        month
+        day
+      }
+      endDate {
+        year
+        month
+        day
+      }
+      format
+      episodes
+      duration
+      season
+      seasonYear
+      source
+      status
+      coverImage {
+        extraLarge
+        color
+      }
+    }
+  }
+}
+"""

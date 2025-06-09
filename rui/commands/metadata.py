@@ -244,21 +244,20 @@ def generate_metadata(directory: str, label: str = None, verbose: bool = False):
         config.get("anilist.username")
     )
 
-    score, entry = min(
-        [
-            [distance(entry.title.lower(), title.lower()), entry]
-            for entry in completed_entries
-        ],
+    animes = anilist.searchAnime(title)
+
+    score, anime = min(
+        [[distance(anime.title.lower(), title.lower()), anime] for anime in animes],
         key=lambda x: x[0],
     )
 
     if score > score_limit:
         logger.error(
-            f"Lower score ({score} {entry}) higher that {score_limit} for {title}"
+            f"Lower score ({score} {anime}) higher that {score_limit} for {title}"
         )
         return None
 
-    anime = anilist.getAnimeById(entry.id)
+    entry = anilist.getListEntryByAnimeId(config.get("anilist.username"), anime.id)
 
     metadata = {}
 
@@ -273,8 +272,10 @@ def generate_metadata(directory: str, label: str = None, verbose: bool = False):
         "files": [],
     }
 
-    metadata["anime"]["score"] = entry.score
-    metadata["anime"]["completedAt"] = entry.completedAt
+    if entry:
+        metadata["anime"]["progress"] = entry.progress
+        metadata["anime"]["score"] = entry.score
+        metadata["anime"]["completedAt"] = entry.completedAt
 
     for episode in fileManager.getEpisodes(anime, absolute_path):
         logger.debug(f"Scanning episode {episode}.")
