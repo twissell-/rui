@@ -44,7 +44,10 @@ def getDestinationPath(
 
 def getEpisodePath(listEntry, episodeNumber, destinationPath=None):
     """If is downloaded, returns de absolute path for the given episodeNumber of a listEntry. False otherwise."""
-    pattern = re.compile(r"(\- *|\_| |S[0-9]*E)0*%s( |v|_)" % episodeNumber)
+    pattern = re.compile(
+        r"(\- *|\_| |S[0-9]*E)0*%s( |v|_)"
+        % f"{episodeNumber}{'*' if listEntry.episodes == 1 else ''}"
+    )
     # searchString = ("%0" + str(len(str(listEntry.episodes))) + "d") % episodeNumber
     # basename = os.path.basename(getDestinationPath(listEntry))
     # for path in glob.glob(os.path.join(getDestinationPath(listEntry), '*', search_string % episodeNumber)):
@@ -56,22 +59,16 @@ def getEpisodePath(listEntry, episodeNumber, destinationPath=None):
     destinationPath = destinationPath or getDestinationPath(listEntry)
     episodeFullPath = None
     for rootDir, dirs, files in os.walk(destinationPath):
-        if listEntry.episodes == 1 and len(files) >= 1:
-            logger.debug("Single episode anime.")
-            episodeFullPath = os.path.join(destinationPath, files[0])
+        for filename in files:
+            logger.debug('Filename: "%s"' % filename)
+            if pattern.search(filename):
+                logger.debug('Match: "%s"' % pattern.search(filename).group(0))
+                episodeFullPath = os.path.join(destinationPath, filename)
+                logger.debug(
+                    'Episode %s found: "%s"' % (episodeNumber, episodeFullPath)
+                )
 
-            return episodeFullPath
-        else:
-            for filename in files:
-                logger.debug('Filename: "%s"' % filename)
-                if pattern.search(filename):
-                    logger.debug('Match: "%s"' % pattern.search(filename).group(0))
-                    episodeFullPath = os.path.join(destinationPath, filename)
-                    logger.debug(
-                        'Episode %s found: "%s"' % (episodeNumber, episodeFullPath)
-                    )
-
-                    return episodeFullPath
+                return episodeFullPath
 
     logger.debug("Episode %s not found." % episodeNumber)
     return False
