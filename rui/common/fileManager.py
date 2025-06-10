@@ -44,17 +44,9 @@ def getDestinationPath(
 
 def getEpisodePath(listEntry, episodeNumber, destinationPath=None):
     """If is downloaded, returns de absolute path for the given episodeNumber of a listEntry. False otherwise."""
-    prefix = (
-        f"{listEntry.title[-1]} "
-        if listEntry.title[-1].isdigit() and listEntry.title[-2] == " "
-        else ""
-    )
     pattern = re.compile(
-        r"%s(\.|- *|_| |(S0*[0-9])*E)0*%s(\.|-| |v|_|\[)"
-        % (
-            prefix,
-            f"{episodeNumber}{'*' if listEntry.episodes == 1 else ''}",
-        )
+        r"(\.|- *|_| |(S0*[0-9])*E)0*%s(\.|-| |v|_|\[)"
+        % (f"{episodeNumber}{'*' if listEntry.episodes == 1 else ''}",)
     )
     # searchString = ("%0" + str(len(str(listEntry.episodes))) + "d") % episodeNumber
     # basename = os.path.basename(getDestinationPath(listEntry))
