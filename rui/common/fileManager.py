@@ -44,9 +44,17 @@ def getDestinationPath(
 
 def getEpisodePath(listEntry, episodeNumber, destinationPath=None):
     """If is downloaded, returns de absolute path for the given episodeNumber of a listEntry. False otherwise."""
+    prefix = (
+        f"{listEntry.title[-1]} "
+        if listEntry.title[-1].isdigit() and listEntry.title[-2] == " "
+        else ""
+    )
     pattern = re.compile(
-        r"(\- *|\_| |S[0-9]*E)0*%s( |v|_)"
-        % f"{episodeNumber}{'*' if listEntry.episodes == 1 else ''}"
+        r"%s(\.|- *|_| |(S0*[0-9])*E)0*%s(\.|-| |v|_|\[)"
+        % (
+            prefix,
+            f"{episodeNumber}{'*' if listEntry.episodes == 1 else ''}",
+        )
     )
     # searchString = ("%0" + str(len(str(listEntry.episodes))) + "d") % episodeNumber
     # basename = os.path.basename(getDestinationPath(listEntry))
@@ -59,9 +67,12 @@ def getEpisodePath(listEntry, episodeNumber, destinationPath=None):
     destinationPath = destinationPath or getDestinationPath(listEntry)
     episodeFullPath = None
     for rootDir, dirs, files in os.walk(destinationPath):
+        files.sort()
         for filename in files:
+            s_filename = filename.replace("10-Bit", "")
             logger.debug('Filename: "%s"' % filename)
-            if pattern.search(filename):
+            logger.debug('Sanitized Filename: "%s"' % s_filename)
+            if pattern.search(s_filename):
                 logger.debug('Match: "%s"' % pattern.search(filename).group(0))
                 episodeFullPath = os.path.join(destinationPath, filename)
                 logger.debug(

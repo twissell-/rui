@@ -82,4 +82,6 @@ def sanitize(string):
         .replace(":", "")
         .replace("/", " ")
         .replace('"', "")
+        .replace("[", "")
+        .replace("]", "")
     )
