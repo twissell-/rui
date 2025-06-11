@@ -62,6 +62,10 @@ def getEpisodePath(listEntry, episodeNumber, destinationPath=None):
         files.sort()
         for filename in files:
             s_filename = filename.replace("10-Bit", "")
+            if " - " in s_filename:
+                # Remove the part after " - " to avoid issues with titles containing numbers
+                s_filename = s_filename[s_filename.find(" - ") :]
+
             logger.debug('Filename: "%s"' % filename)
             logger.debug('Sanitized Filename: "%s"' % s_filename)
             if pattern.search(s_filename):
