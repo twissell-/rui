@@ -1,6 +1,7 @@
 {
     "anilist": {
-        "username": ""
+        "username": "",
+        "requestInterval": 2
     },
     "animebytes": {
         "username": "",
