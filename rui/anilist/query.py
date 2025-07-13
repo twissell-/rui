@@ -110,6 +110,14 @@ query ($search: String, $format_not_in: [MediaFormat]) {
         extraLarge
         color
       }
+      tags {
+        id
+        name
+        isAdult
+        isGeneralSpoiler
+        isMediaSpoiler
+        rank
+      }
     }
   }
 }

@@ -76,6 +76,43 @@ class AnilistCache(object):
             logger.info("Deleted file : %s" % filePath)
 
 
+class Tag(object):
+    def __init__(self, raw_tag):
+        super(Tag, self).__init__()
+
+        # raw tag example
+        # {
+        #   "id": 233,
+        #   "name": "Youkai",
+        #   "category": "Theme-Fantasy", # IGNORED
+        #   "description": "Prominently features supernatural creatures from Japanese folklore.", # IGNORED
+        #   "isAdult": false,
+        #   "isGeneralSpoiler": false,
+        #   "isMediaSpoiler": false,
+        #   "rank": 92
+        # }
+
+        self.id = raw_tag.get("id")
+        self.name = raw_tag.get("name")
+        self.isAdult = raw_tag.get("isAdult")
+        self.isGeneralSpoiler = raw_tag.get("isGeneralSpoiler")
+        self.isMediaSpoiler = raw_tag.get("isMediaSpoiler")
+        self.rank = raw_tag.get("rank")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "isAdult": self.isAdult,
+            "isGeneralSpoiler": self.isGeneralSpoiler,
+            "isMediaSpoiler": self.isMediaSpoiler,
+            "rank": self.rank,
+        }
+
+    def __repr__(self):
+        return f"{self.name} ({self.rank})"
+
+
 class AnimeMedia(object):
     def __init__(self, raw_media):
         super(AnimeMedia, self).__init__()
@@ -101,6 +138,7 @@ class AnimeMedia(object):
             "valueOverride." + str(self.id) + ".searchString"
         )
         self.converImage = raw_media.get("coverImage").get("extraLarge")
+        self._tags = [Tag(tag) for tag in raw_media.get("tags", [])]
 
     def to_dict(self):
         return {
@@ -121,7 +159,30 @@ class AnimeMedia(object):
             "status": self.status,
             "source": self.source,
             "converImage": self.converImage,
+            "tags": [{"name": tag.name, "rank": tag.rank} for tag in self.tags],
+            "spoilerTags": [
+                {"name": tag.name, "rank": tag.rank} for tag in self.spoilerTags
+            ],
+            "adultTags": [
+                {"name": tag.name, "rank": tag.rank} for tag in self.adultTags
+            ],
         }
+
+    @property
+    def tags(self):
+        return [
+            tag
+            for tag in self._tags
+            if not (tag.isGeneralSpoiler or tag.isMediaSpoiler or tag.isAdult)
+        ]
+
+    @property
+    def spoilerTags(self):
+        return [tag for tag in self._tags if tag.isGeneralSpoiler or tag.isMediaSpoiler]
+
+    @property
+    def adultTags(self):
+        return [tag for tag in self._tags if tag.isAdult]
 
     def __repr__(self):
         return "[%d] %s %s %d %s" % (

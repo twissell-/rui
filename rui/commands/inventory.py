@@ -84,18 +84,28 @@ def _get_file_metadata(file_path: str) -> dict:
     return file_metadata
 
 
-def _flat_anime_metadata(directory: dict) -> dict:
+def _flat_anime_metadata(directory: dict, label: str = None) -> dict:
     anime = directory["anime"]
 
     anime.pop("titles")
     anime["extra_files"] = "\n".join(directory.get("extra_files", []))
     anime["generation_date"] = directory.get("generation_date")
     anime["original_directory"] = directory.get("original_directory")
+    anime["tags"] = "\n".join(
+        [f"{tag['name']} ({tag['rank']})" for tag in anime.get("tags", [])]
+    )
+    anime["spoilerTags"] = "\n".join(
+        [f"{tag['name']} ({tag['rank']})" for tag in anime.get("spoilerTags", [])]
+    )
+    anime["adultTags"] = "\n".join(
+        [f"{tag['name']} ({tag['rank']})" for tag in anime.get("adultTags", [])]
+    )
+    anime["label"] = label or ""
 
     return anime
 
 
-def _flat_files_metadata(directory: dict) -> dict:
+def _flat_files_metadata(directory: dict, label: str = None) -> dict:
     anime = directory["anime"]
     files = []
 
@@ -124,29 +134,32 @@ def _flat_files_metadata(directory: dict) -> dict:
             )
 
         file["anime_id"] = anime.get("id")
+        file["label"] = label or ""
 
         files.append(file)
 
     return files
 
 
-def _write_metadata_as_csv(metadata: dict, output_dir) -> dict:
-    label = metadata.get("label")
-    generation_date = metadata.get("generation_date")
+def _write_metadata_as_csv(inventory: dict, output_dir) -> None:
+    label = inventory.get("label")
+    generation_date = inventory.get("generation_date")
     anime_file = os.path.join(
         output_dir,
-        f"metadata-{label + '-' if label else ''}{generation_date.replace(' ', '_') + '-' if generation_date else ''}anime.csv",
+        f"inventory-{label + '-' if label else ''}{generation_date.replace(' ', '_') + '-' if generation_date else ''}anime.csv",
     )
     files_file = os.path.join(
         output_dir,
-        f"metadata-{label + '-' if label else ''}{generation_date.replace(' ', '_') + '-' if generation_date else ''}files.csv",
+        f"inventory-{label + '-' if label else ''}{generation_date.replace(' ', '_') + '-' if generation_date else ''}files.csv",
     )
     failed_file = os.path.join(
         output_dir,
-        f"metadata-{label + '-' if label else ''}{generation_date.replace(' ', '_') + '-' if generation_date else ''}failed.csv",
+        f"inventory-{label + '-' if label else ''}{generation_date.replace(' ', '_') + '-' if generation_date else ''}failed.csv",
     )
 
-    animes = [_flat_anime_metadata(directory) for directory in metadata["directories"]]
+    animes = [
+        _flat_anime_metadata(directory, label) for directory in inventory["directories"]
+    ]
     with open(anime_file, "w", newline="") as f:
         w = csv.DictWriter(f, animes[0].keys())
         w.writeheader()
@@ -154,8 +167,8 @@ def _write_metadata_as_csv(metadata: dict, output_dir) -> dict:
 
     files = []
     [
-        files.extend(_flat_files_metadata(directory))
-        for directory in metadata["directories"]
+        files.extend(_flat_files_metadata(directory, label))
+        for directory in inventory["directories"]
     ]
     with open(files_file, "w", newline="") as f:
         w = csv.DictWriter(f, files[0].keys())
@@ -164,7 +177,7 @@ def _write_metadata_as_csv(metadata: dict, output_dir) -> dict:
 
     failed = [
         {"failed_directories": directory}
-        for directory in metadata["failed_directories"]
+        for directory in inventory["failed_directories"]
     ]
     with open(failed_file, "w", newline="") as f:
         w = csv.DictWriter(f, failed[0].keys())
@@ -172,7 +185,7 @@ def _write_metadata_as_csv(metadata: dict, output_dir) -> dict:
         w.writerows(failed)
 
 
-def full_scan_metadata(
+def compile_inventory(
     directory: str,
     label: str = None,
     output_dir: str = ".",
@@ -181,25 +194,25 @@ def full_scan_metadata(
     verbose: bool = False,
 ):
     absolute_path = abspath(directory)
-    metadata = {}
+    inventory = {}
 
     if label:
-        metadata["label"] = label
+        inventory["label"] = label
 
-    metadata = {
-        **metadata,
+    inventory = {
+        **inventory,
         "generation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "original_directory": absolute_path,
         "directories": [],
         "failed_directories": [],
     }
 
-    logger.info(f"Starting full scan for {absolute_path}")
+    logger.info(f"Starting inventory scan for {absolute_path}")
 
     # for dir in next(os.walk(directory))[1]:
     for dir in track(
         next(os.walk(directory))[1],
-        description="Generating metadata...",
+        description="Generating inventory...",
         disable=not verbose,
     ):
         dir_path = os.path.join(absolute_path, dir)
@@ -212,17 +225,17 @@ def full_scan_metadata(
             dir_metadata = generate_metadata(dir_path)
 
         if dir_metadata:
-            metadata["directories"].append(dir_metadata)
+            inventory["directories"].append(dir_metadata)
         else:
-            metadata["failed_directories"].append(dir_path)
+            inventory["failed_directories"].append(dir_path)
 
     if format == "json":
         with open(os.path.join(output_dir, "metadata.json"), "w") as metadata_file:
-            json.dump(metadata, metadata_file, indent=2, default=str)
+            json.dump(inventory, metadata_file, indent=2, default=str)
     elif format == "csv":
-        _write_metadata_as_csv(metadata, output_dir)
+        _write_metadata_as_csv(inventory, output_dir)
 
-    return metadata
+    return inventory
 
 
 def generate_metadata(directory: str, label: str = None, verbose: bool = False):
@@ -239,12 +252,11 @@ def generate_metadata(directory: str, label: str = None, verbose: bool = False):
         return
 
     logger.debug("Getting show metadata from Anilist.")
-
-    completed_entries = anilist.getCompletedListByUsername(
-        config.get("anilist.username")
-    )
-
     animes = anilist.searchAnime(title)
+
+    if not animes:
+        logger.error(f"No anime found for {title}.")
+        return None
 
     score, anime = min(
         [[distance(anime.title.lower(), title.lower()), anime] for anime in animes],
@@ -272,10 +284,9 @@ def generate_metadata(directory: str, label: str = None, verbose: bool = False):
         "files": [],
     }
 
-    if entry:
-        metadata["anime"]["progress"] = entry.progress
-        metadata["anime"]["score"] = entry.score
-        metadata["anime"]["completedAt"] = entry.completedAt
+    metadata["anime"]["progress"] = entry.progress if entry else None
+    metadata["anime"]["score"] = entry.score if entry else None
+    metadata["anime"]["completedAt"] = entry.completedAt if entry else None
 
     for episode in fileManager.getEpisodes(anime, absolute_path):
         logger.debug(f"Scanning episode {episode}.")

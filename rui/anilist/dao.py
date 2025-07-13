@@ -135,7 +135,7 @@ def getAnimeById(anime_id):
     return AnimeMedia(response["data"]["Media"])
 
 
-def searchAnime(search_string: str):
+def searchAnime(search_string: str) -> List[AnimeMedia]:
     cache_key = f"search-{search_string}"
     cache = AnilistCache.getCache(cache_key)
     excluded_formats = ["MUSIC", "MANGA", "NOVEL", "ONE_SHOT"]

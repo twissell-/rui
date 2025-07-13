@@ -58,13 +58,13 @@ def generate_metadata(
 
 
 @rui.command(
-    help="Generate metadata for all anime directories inside the given directory."
+    help="Generates an inventory from the metadata of all anime directories inside the given directory."
 )
-def full_scan_metadata(
+def compile_inventory(
     directory: Annotated[str, typer.Argument(help="The direcotry to scan.")],
     label: Annotated[
         str,
-        typer.Option(help="Add label to generated metadata."),
+        typer.Option(help="Add label to the generated inventory."),
     ] = None,
     output_dir: Annotated[
         str,
@@ -73,7 +73,7 @@ def full_scan_metadata(
     format: Annotated[
         str,
         typer.Option(
-            help="Format of the generated metadata files. Supported formats: csv, json."
+            help="Format of the generated inventory files. Supported formats: csv, json."
         ),
     ] = "json",
     recreate: Annotated[
@@ -84,7 +84,7 @@ def full_scan_metadata(
     if format not in ["csv", "json"]:
         raise typer.BadParameter("supported formats are csv or json.")
 
-    commands.full_scan_metadata(
+    commands.compile_inventory(
         directory=directory,
         label=label,
         output_dir=output_dir,
