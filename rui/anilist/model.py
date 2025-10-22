@@ -137,7 +137,7 @@ class AnimeMedia(object):
         self.searchString = config.get(
             "valueOverride." + str(self.id) + ".searchString"
         )
-        self.converImage = raw_media.get("coverImage").get("extraLarge")
+        self.coverImage = raw_media.get("coverImage").get("extraLarge")
         self._tags = [Tag(tag) for tag in raw_media.get("tags", [])]
 
     def to_dict(self):
@@ -158,7 +158,7 @@ class AnimeMedia(object):
             "season": self.season,
             "status": self.status,
             "source": self.source,
-            "converImage": self.converImage,
+            "coverImage": self.coverImage,
             "tags": [{"name": tag.name, "rank": tag.rank} for tag in self.tags],
             "spoilerTags": [
                 {"name": tag.name, "rank": tag.rank} for tag in self.spoilerTags
